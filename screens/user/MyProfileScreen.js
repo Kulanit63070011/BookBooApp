@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { View, Text, Image, Pressable } from 'react-native';
 import { myProfileStyles } from '../../style/user/MyProfileStyle';
 import { auth } from '../../backend/firebase';
 import { getDoc } from 'firebase/firestore';
@@ -71,6 +71,7 @@ const MyProfileScreen = ({ navigation }) => {
     }
   };
 
+  // MyProfileScreen.js
   const handleEditProfile = async () => {
     navigation.navigate('EditProfile', {
       visible: true,
@@ -81,13 +82,14 @@ const MyProfileScreen = ({ navigation }) => {
         email: user.email,
         aboutMe: user.aboutMe,
       },
+      setUser: setUser, // เพิ่มการส่ง setUser ไปยังหน้า EditProfileScreen
       onSave: async (updatedUser) => {
-        // ทำการอัพเดท state หรือทำการ refresh หน้าข้อมูล
+        // ทำการอัปเดท state หรือทำการ refresh หน้าข้อมูล
         setUser(updatedUser);
-  
-        // เพิ่มการอัพเดทข้อมูลใน Firestore โดยใช้ user.id
+
+        // เพิ่มการอัปเดทข้อมูลใน Firestore โดยใช้ user.id
         const userDocRef = doc(getFirestore(), 'users', updatedUser.id);
-  
+
         try {
           await updateDoc(userDocRef, {
             displayName: updatedUser.displayName,
@@ -106,7 +108,7 @@ const MyProfileScreen = ({ navigation }) => {
       },
     });
   };
-  
+
   return (
     <View style={myProfileStyles.container}>
       <View style={myProfileStyles.profileContainer}>
@@ -115,12 +117,12 @@ const MyProfileScreen = ({ navigation }) => {
         <Text style={myProfileStyles.email}>{user.email}</Text>
         <Text style={myProfileStyles.aboutMe}>{user.aboutMe}</Text>
       </View>
-      <TouchableOpacity style={myProfileStyles.editProfileButton} onPress={handleEditProfile}>
+      <Pressable style={myProfileStyles.editProfileButton} onPress={handleEditProfile}>
         <Text>Edit Profile</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={myProfileStyles.logoutButton} onPress={handleLogout}>
+      </Pressable>
+      <Pressable style={myProfileStyles.logoutButton} onPress={handleLogout}>
         <Text>Logout</Text>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 };

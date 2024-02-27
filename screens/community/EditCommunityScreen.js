@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, Pressable, TextInput } from 'react-native';
 import { createCommuStyles } from '../../style/community/CreateCommuStyle';
 
 const EditCommunityScreen = ({ visible, communityDetails, onClose, onDelete, onSave }) => {
@@ -56,12 +56,12 @@ const EditCommunityScreen = ({ visible, communityDetails, onClose, onDelete, onS
           multiline={true}
         />
       </View>
-      <TouchableOpacity onPress={handleSave} style={createCommuStyles.actionButton}>
+      <Pressable onPress={handleSave} style={createCommuStyles.actionButton}>
         <Text style={createCommuStyles.buttonText}>Save</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={handleDelete} style={createCommuStyles.actionButton}>
-          <Text style={createCommuStyles.buttonText}>Delete</Text>
-        </TouchableOpacity>
+      </Pressable>
+      <Pressable onPress={handleDelete} style={createCommuStyles.actionButton}>
+        <Text style={createCommuStyles.buttonText}>Delete</Text>
+      </Pressable>
     </View>
   );
 };

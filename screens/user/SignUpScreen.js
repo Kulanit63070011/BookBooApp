@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, TextInput, ScrollView } from 'react-native'
+import { View, Text, Pressable, Image, TextInput, ScrollView } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native';
 import { signUpStyles } from '../../style/user/SignUpStyle';
@@ -56,9 +56,9 @@ export default function SignUpScreen() {
         </View>
       </SafeAreaView>
       <ScrollView style={signUpStyles.contentContainer}>
-        <TouchableOpacity>
+        <Pressable>
           <Image source={require('../../assets/images/human.png')} style={signUpStyles.profileImage} />
-        </TouchableOpacity>
+        </Pressable>
         <View style={signUpStyles.inputContainer}>
           <View style={{ marginBottom: 20 }}>
             <Text style={signUpStyles.inputLabel}>Display Name</Text>
@@ -118,21 +118,21 @@ export default function SignUpScreen() {
             />
           </View>
           <View style={[signUpStyles.socialButtonContainer, { marginBottom: 20 }]}>
-            <TouchableOpacity style={signUpStyles.socialButton}>
+            <Pressable style={signUpStyles.socialButton}>
               <Image source={require('../../assets/icons/google.png')} style={signUpStyles.socialButtonImage} />
-            </TouchableOpacity>
+            </Pressable>
             <View style={{ flexDirection: 'row', justifyContent: 'center', spaceX: 12 }}>
-              <TouchableOpacity style={{ padding: 8, backgroundColor: '#f0f0f0', borderRadius: 20 }}>
+              <Pressable style={{ padding: 8, backgroundColor: '#f0f0f0', borderRadius: 20 }}>
                 <Image source={require('../../assets/icons/apple.png')} style={{ width: 40, height: 40 }} />
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
           <View style={{ paddingBottom: 30 }}>
-            <TouchableOpacity style={signUpStyles.signUpButton} onPress={handleSignUp}>
+            <Pressable style={signUpStyles.signUpButton} onPress={handleSignUp}>
               <Text style={signUpStyles.signUpButtonText}>
                 Sign Up
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </ScrollView>

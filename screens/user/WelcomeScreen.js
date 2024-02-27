@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { View, Text, Image, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { themeColors } from '../../theme';
 import { useNavigation } from '@react-navigation/native';
@@ -19,16 +19,16 @@ export default function WelcomeScreen() {
           <Image source={require("../../assets/logo_one.png")} style={WelcomeStyle.image} />
         </View>
         <View style={WelcomeStyle.buttonContainer}>
-          <TouchableOpacity
+          <Pressable
             onPress={() => navigation.navigate('Login')}
             style={WelcomeStyle.button}>
             <Text style={WelcomeStyle.buttonText}>Log in</Text>
-          </TouchableOpacity>
+          </Pressable>
           <View style={WelcomeStyle.loginContainer}>
             <Text style={WelcomeStyle.loginText}>Already have an account?</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+            <Pressable onPress={() => navigation.navigate('SignUp')}>
               <Text style={WelcomeStyle.loginLink}> Sign Up</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </View>

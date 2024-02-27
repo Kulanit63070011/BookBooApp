@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, ScrollView, SafeAreaView } from 'react-native';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import BottomNavigator from '../../navigation/BottomNavigator';
 import FloatingButton from '../../components/common/FloatingAddButton';
@@ -7,130 +7,88 @@ import BookDetailsModal from '../../components/BookShelf/BookDetailsModal';
 import BookColumnOfCards from '../../components/BookShelf/BookColumnOfCards';
 import { myBookShelfStyles } from '../../style/bookshelf/MyBookShelfStyle';
 import { signUpStyles } from '../../style/user/SignUpStyle';
-import { auth } from '../../backend/firebase';
-import { doc, getDoc, getFirestore, updateDoc } from 'firebase/firestore';
+import { auth, db } from '../../backend/firebase';
+import { collection, getDocs, query, where, doc, getDoc, setDoc } from 'firebase/firestore';
 
 const MyBookShelfScreen = () => {
   const navigation = useNavigation();
 
-  // สร้าง state เพื่อเก็บข้อมูลของหนังสือที่ผู้ใช้กรอกใหม่
-  const [newBook, setNewBook] = useState({
-    title: '',
-    author: '',
-    purchaseDate: '',
-    coverImage: '',
-  });
-
-  // สร้าง state เพื่อเก็บข้อมูลหนังสือทั้งหมดในหนังสือของผู้ใช้
   const [books, setBooks] = useState([]);
-
-  // สร้าง state เพื่อเก็บข้อมูลหนังสือที่ผู้ใช้เลือกเพื่อดูรายละเอียด
   const [selectedBook, setSelectedBook] = useState(null);
-
-  // สร้าง state เพื่อควบคุมการแสดงหรือซ่อน Modal ข้อมูลหนังสือ
   const [isModalVisible, setIsModalVisible] = useState(false);
-
-  // สร้าง state เพื่อใช้ในการ trigger ให้ useEffect ทำงานเมื่อมีการอัปเดต
-  const [updateTrigger, setUpdateTrigger] = useState(0);
-
-  // ฟังก์ชันสำหรับดึงข้อมูลหนังสือจาก Firebase Firestore
-  const fetchUserBookshelf = async () => {
-    try {
-      const user = auth.currentUser;
-      if (user) {
-        const userDocRef = doc(getFirestore(), 'users', user.uid);
-        const userDocSnapshot = await getDoc(userDocRef);
-
-        if (userDocSnapshot.exists()) {
-          const userBookshelfId = userDocSnapshot.data().bookshelfId;
-          const bookshelfDocRef = doc(getFirestore(), 'bookshelf', userBookshelfId);
-          const bookshelfDocSnapshot = await getDoc(bookshelfDocRef);
-
-          if (bookshelfDocSnapshot.exists()) {
-            const userBooks = bookshelfDocSnapshot.data().books || [];
-            setBooks(userBooks);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching user bookshelf:', error.message);
-    }
-  };
+  const [editingBook, setEditingBook] = useState(null);
 
   const isFocused = useIsFocused();
-  // useEffect ที่จะทำงานเมื่อมีการเปลี่ยนแปลงใน updateTrigger
+
   useEffect(() => {
-    // ตรวจสอบว่าหน้าจออยู่ในสถานะ focus หรือไม่
+    const fetchBooks = async () => {
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          // สร้าง query เพื่อดึงข้อมูลหนังสือของผู้ใช้ปัจจุบันจากคอลเล็กชัน "bookshelves"
+          const userBookshelfRef = doc(db, 'bookshelves', user.uid);
+          const bookshelfSnap = await getDoc(userBookshelfRef);
+
+          if (bookshelfSnap.exists()) {
+            const bookshelfData = bookshelfSnap.data();
+            const booksInBookshelf = bookshelfData.books || [];
+
+            setBooks(booksInBookshelf);
+          } else {
+            console.log('User bookshelf not found');
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user books:', error.message);
+      }
+    };
+
     if (isFocused) {
-      fetchUserBookshelf();
+      fetchBooks();
     }
   }, [isFocused]);
 
-  // ฟังก์ชันสำหรับเพิ่มหนังสือ
-  const addBook = () => {
-    // ... (ไม่ได้เปลี่ยนแปลง)
+
+  const deleteBook = () => {
+    setIsModalVisible(false);
   };
 
-  // ฟังก์ชันสำหรับเปิด Modal เพื่อดูรายละเอียดของหนังสือ
   const openBookDetails = (book) => {
     setSelectedBook(book);
     setIsModalVisible(true);
   };
 
-  // ฟังก์ชันสำหรับปิด Modal
-  const deleteBook = () => {
-    setIsModalVisible(false);
-  };
-
-  // ฟังก์ชันที่จะทำงานเมื่อบันทึกการแก้ไขข้อมูลหนังสือ
-  const onSave = async (updatedDetails, bookId) => {
-    updateBook(updatedDetails, bookId);
-    setIsModalVisible(false);
-  };
-
-  // ฟังก์ชันที่ใช้ในการอัปเดตข้อมูลหนังสือ
-  const updateBook = async (updatedDetails, bookId) => {
+  const saveBookChanges = async (updatedDetails, bookId) => {
     try {
-      const bookIndex = books.findIndex((book) => book.id === bookId);
+      const user = auth.currentUser;
+      if (user) {
+        const userBookshelfRef = doc(db, 'bookshelves', user.uid);
+        const bookshelfSnap = await getDoc(userBookshelfRef);
   
-      if (bookIndex !== -1) {
-        const updatedBooks = [...books];
-        updatedBooks[bookIndex] = { ...updatedBooks[bookIndex], ...updatedDetails };
+        if (bookshelfSnap.exists()) {
+          const bookshelfData = bookshelfSnap.data();
+          let booksInBookshelf = bookshelfData.books || [];
   
-        const user = auth.currentUser;
-        if (user) {
-          const userDocRef = doc(getFirestore(), 'users', user.uid);
-          const userDocSnapshot = await getDoc(userDocRef);
-  
-          if (userDocSnapshot.exists()) {
-            const userBookshelfId = userDocSnapshot.data().bookshelfId;
-            const bookshelfDocRef = doc(getFirestore(), 'bookshelf', userBookshelfId);
-            const bookshelfDocSnapshot = await getDoc(bookshelfDocRef);
-  
-            if (bookshelfDocSnapshot.exists()) {
-              const userBooks = bookshelfDocSnapshot.data().books || [];
-              const updatedUserBooks = [...userBooks];
-              updatedUserBooks[bookIndex] = { ...userBooks[bookIndex], ...updatedDetails };
-  
-              await updateDoc(bookshelfDocRef, { books: updatedUserBooks });  // อัปเดต Firebase Firestore
+          // สร้างรายการใหม่โดยเฉพาะสำหรับหนังสือที่มีการเปลี่ยนแปลง
+          const updatedBooks = booksInBookshelf.map(book => {
+            if (book.id === bookId) {
+              return { ...book, ...updatedDetails };
             }
-          }
-        }
+            return book;
+          });
   
-        setBooks(updatedBooks);  // อัปเดต local state
+          // อัปเดตหนังสือเฉพาะที่มีการเปลี่ยนแปลงใน Firestore
+          await setDoc(userBookshelfRef, { books: updatedBooks }, { merge: true });
+          setBooks(updatedBooks);
+        } else {
+          console.log('User bookshelf not found');
+        }
       }
-      setUpdateTrigger((prev) => prev + 1);
     } catch (error) {
-      console.error('Error updating book:', error.message);
+      console.error('Error saving book changes:', error.message);
     }
   };
   
-  
-  
-  
-
-
-
   return (
     <View style={signUpStyles.container}>
       <SafeAreaView>
@@ -139,23 +97,9 @@ const MyBookShelfScreen = () => {
         </View>
       </SafeAreaView>
       <View style={[myBookShelfStyles.contentContainer]}>
-        <View style={myBookShelfStyles.bookInputContainer}>
-          <TextInput
-            style={myBookShelfStyles.input}
-            placeholder="Book Title"
-            value={newBook.title}
-            onChangeText={(text) => setNewBook({ ...newBook, title: text })}
-          />
-          <TouchableOpacity onPress={() => alert('Perform search')} style={{ paddingLeft: 20 }}>
-            <Image
-              source={require('../../assets/icons/searchIcon.png')}
-              style={{ width: 24, height: 24 }}
-            />
-          </TouchableOpacity>
-        </View>
         <ScrollView>
-          <View>
-            {books.length > 0 ? (
+          <View style={{ userSelect: 'none' }} >
+            {Array.isArray(books) && books.length > 0 ? (
               <BookColumnOfCards cards={books.reverse()} onPress={openBookDetails} />
             ) : (
               <Text>No books in your bookshelf</Text>
@@ -170,7 +114,7 @@ const MyBookShelfScreen = () => {
         bookDetails={selectedBook}
         onClose={() => setIsModalVisible(false)}
         onDelete={deleteBook}
-        onSave={onSave}
+        onSave={saveBookChanges} // นี่คือส่วนที่เราเชื่อมโยงฟังก์ชัน saveBookChanges กับ Modal
       />
     </View>
   );

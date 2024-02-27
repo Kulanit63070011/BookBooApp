@@ -1,10 +1,11 @@
 // backend/firebaseConfig.js
 export const firebaseConfig = {
-    apiKey: "AIzaSyAyJlorfAx1beE2JOPphsg-g1iY7NDOCdM",
-    authDomain: "test-bookboo.firebaseapp.com",
-    projectId: "test-bookboo",
-    storageBucket: "test-bookboo.appspot.com",
-    messagingSenderId: "57647224528",
-    appId: "1:57647224528:web:5613f58b7c09b6c9a9b0d5"
+  apiKey: "AIzaSyD-FrBuM_Pn7zRbOd3aReCty9r2YXEtPU4",
+  authDomain: "test-bookbootwo.firebaseapp.com",
+  projectId: "test-bookbootwo",
+  storageBucket: "test-bookbootwo.appspot.com",
+  messagingSenderId: "723773177713",
+  appId: "1:723773177713:web:a61b7e9922fefa6b32c0d0",
+  measurementId: "G-9PV24BPZ35"
   };
   

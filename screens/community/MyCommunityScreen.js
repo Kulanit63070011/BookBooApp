@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, TextInput, ScrollView, SafeAreaView } from 'react-native';
 import BottomNavigator from '../../navigation/BottomNavigator';
 import FloatingButton from '../../components/common/FloatingAddButton';
 import { useNavigation } from '@react-navigation/native';
 import { signUpStyles } from '../../style/user/SignUpStyle';
 import { allCommunityStyles } from '../../style/community/AllCommunityStyle';
-import CommunityDetailsModal from '../../components/Community/CommunityDetailsModal';
 import MyCommuColumnOfCards from '../../components/Community/MyCommuColumnOfCards';
+import { db, auth } from '../../backend/firebase';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { updateDoc, arrayRemove, doc } from 'firebase/firestore';
+import SearchBar from '../../components/common/searchBar';
 
 const MyCommunityScreen = () => {
   const navigation = useNavigation();
@@ -15,46 +18,59 @@ const MyCommunityScreen = () => {
     description: '',
   });
 
-  const [communities, setCommunities] = useState([
-    { name: 'Community 1', description: 'Description for Community 1' },
-    { name: 'Community 2', description: 'Description for Community 2' },
-    { name: 'Community 3', description: 'Description for Community 3' },
-    { name: 'Community 4', description: 'Description for Community 4' },
-    { name: 'Community 5', description: 'Description for Community 5' },
-    { name: 'Community 6', description: 'Description for Community 6' },
-    { name: 'Community 7', description: 'Description for Community 7' },
-    { name: 'Community 8', description: 'Description for Community 8' },
-  ]);
-
+  const [communities, setCommunities] = useState([]);
   const [selectedCommunity, setSelectedCommunity] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const addCommunity = () => {
-    const isCommunityExist = communities.some((community) => community.name === newCommunity.name);
-    if (!isCommunityExist) {
-      setCommunities([...communities, newCommunity]);
-      setNewCommunity({ name: '', description: '' });
-    } else {
-      alert('This community already exists.');
+  useEffect(() => {
+    const user = auth.currentUser;
+
+    if (user) {
+      const q = query(collection(db, 'communities'), where('members', 'array-contains', user.uid));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const communityData = snapshot.docs.map((doc) => doc.data());
+        setCommunities(communityData);
+      });
+
+      return () => unsubscribe();
     }
+  }, []);
+
+  const openCommunityDetails = (communityId) => {
+    navigation.navigate('Community', { communityId });
   };
 
-  useEffect(() => {
-    console.log('Modal visibility inside component:', isModalVisible);
-  }, [isModalVisible]);
-
-  useEffect(() => {
-    console.log('Community details inside component:', selectedCommunity);
-  }, [selectedCommunity]);
-
-  const openCommunityDetails = (community) => {
-    console.log('Opening community details for:', community);
-    setSelectedCommunity(community);
-    setIsModalVisible(true);
-  };
 
   const deleteCommunity = () => {
     setIsModalVisible(false);
+  };
+
+  const isOwner = (community) => {
+    const user = auth.currentUser;
+    return user && community.createdBy === user.uid;
+  };
+
+  const leaveCommunity = async (community) => {
+    const user = auth.currentUser;
+    alert('hello');
+    if (user && community && community.communityId
+    ) {
+      try {
+        if (!isOwner(community)) {
+          const communityRef = doc(db, 'communities', community.communityId
+          );
+          await updateDoc(communityRef, {
+            members: arrayRemove(user.uid),
+          });
+          alert('hello2');
+          setIsModalVisible(false);
+        } else {
+          alert("คุณไม่สามารถออกจากชุมชนของคุณเองได้");
+        }
+      } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการออกจากชุมชน: ', error);
+      }
+    }
   };
 
   return (
@@ -65,24 +81,21 @@ const MyCommunityScreen = () => {
         </View>
       </SafeAreaView>
       <View style={[allCommunityStyles.contentContainer]}>
-        <View style={allCommunityStyles.bookInputContainer}>
-          <TextInput
-            style={allCommunityStyles.input}
-            placeholder="Community Name"
-            value={newCommunity.name}
-            onChangeText={(text) => setNewCommunity({ ...newCommunity, name: text })}
-          />
-          <TouchableOpacity onPress={() => alert('Perform search')} style={{ paddingLeft: 20 }}>
-            <Image
-              source={require('../../assets/icons/searchIcon.png')}
-              style={{ width: 24, height: 24 }}
-            />
-          </TouchableOpacity>
-        </View>
+        <SearchBar
+          value={newCommunity.name}
+          onChange={(text) => setNewCommunity({ ...newCommunity, name: text })}
+          onSearch={() => alert('Perform search')}
+        />
         <ScrollView>
           <View>
             {communities.length > 0 ? (
-              <MyCommuColumnOfCards cards={communities} onPress={openCommunityDetails} cardWidth={170} />
+              <MyCommuColumnOfCards
+                cards={communities}
+                onPress={(community) => openCommunityDetails(community.communityId)}
+                onLeave={(community) => leaveCommunity(community)}
+                cardWidth={170}
+                isOwner={isOwner}
+              />
             ) : (
               <Text>No communities available</Text>
             )}
@@ -91,12 +104,6 @@ const MyCommunityScreen = () => {
       </View>
       <FloatingButton targetScreen="CreateCommunity" />
       <BottomNavigator style={allCommunityStyles.bottomNavigator} />
-      <CommunityDetailsModal
-        visible={isModalVisible}
-        communityDetails={selectedCommunity}
-        onClose={() => setIsModalVisible(false)}
-        onDelete={deleteCommunity}
-      />
     </View>
   );
 };

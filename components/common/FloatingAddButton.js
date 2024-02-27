@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity, Text } from 'react-native';
+import { View, Pressable, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 const FloatingButton = ({ targetScreen }) => {
@@ -11,12 +11,12 @@ const FloatingButton = ({ targetScreen }) => {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        style={styles.button}
+      <Pressable
+        style={[styles.button, {userSelect: 'auto'}]}
         onPress={handlePress}
       >
         <Text style={styles.buttonText}>+</Text>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 };

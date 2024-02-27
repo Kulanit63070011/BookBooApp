@@ -1,57 +1,103 @@
-import React, { useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Modal, View, Text, Pressable, StyleSheet, ScrollView, TextInput } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { addDoc, collection, query, onSnapshot } from 'firebase/firestore';
+import { auth, db } from '../../backend/firebase';
 
-const PostDetailsModal = ({ visible, post, onClose }) => {
-  if (!visible || !post) {
-    return null;
-  }
+const PostDetailsModal = ({ visible, post, onClose, refreshPostData, communityId }) => {
+  // Destructure post data
+  const { title, content, likes, dislikes, createdByName } = post || {};
 
-  const { title, content } = post;
-
-  // Add state to store like and dislike counts
-  const [likes, setLikes] = useState(0);
-  const [dislikes, setDislikes] = useState(0);
-
-  // Add state to track whether the user has voted
-  const [voted, setVoted] = useState(false);
-
-  // Add state to store comments
-  const [comments, setComments] = useState([]);
+  // State variables for managing new comment input and existing comments
   const [newComment, setNewComment] = useState('');
+  const [comments, setComments] = useState([]);
 
-  // Function to handle liking a post
-  const handleLike = () => {
-    if (!voted) {
-      setLikes(likes + 1);
-      setVoted(true);
-    }
-  };
+  useEffect(() => {
+    const getComments = async () => {
+      try {
+        const commentsRef = collection(db, 'communities', communityId, 'Posts', post.id, 'Comments');
+        const q = query(commentsRef);
 
-  // Function to handle disliking a post
-  const handleDislike = () => {
-    if (!voted) {
-      setDislikes(dislikes + 1);
-      setVoted(true);
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+          const fetchedComments = [];
+          snapshot.forEach((doc) => {
+            fetchedComments.push({
+              id: doc.id,
+              ...doc.data()
+            });
+          });
+          setComments(fetchedComments);
+        });
+
+        return unsubscribe;
+      } catch (error) {
+        console.error('Error fetching comments:', error);
+      }
+    };
+
+    // Fetch comments only if the component is visible and post data exists
+    if (visible && post) {
+      getComments();
     }
-  };
+  }, [visible, post, communityId]);
 
   // Function to handle adding a new comment
-  const handleAddComment = () => {
-    if (newComment.trim() !== '') {
-      setComments([...comments, newComment]);
-      setNewComment('');
+  const handleAddComment = async () => {
+    try {
+      // Check if newComment is defined and not an empty string after trimming
+      if (newComment && newComment.trim() !== '') {
+        // Check if communityId and post.id are valid
+        if (!communityId || !post.id) { // ใช้งานค่า communityId และ post.id ที่รับเข้ามา
+          console.error('Invalid communityId or post id.');
+          return;
+        }
+
+        // Add a new comment document to the 'Comments' collection within the post's subcollection
+        const commentRef = collection(db, 'communities', communityId, 'Posts', post.id, 'Comments');
+        const newCommentRef = await addDoc(commentRef, {
+          content: newComment,
+          createdAt: new Date(),
+          createdBy: auth.currentUser.uid,
+          createdByName: auth.currentUser.displayName,
+        });
+
+        // Log the newly added comment data from Firestore
+        console.log('Newly added comment:', {
+          id: newCommentRef.id,
+          content: newComment,
+          createdAt: new Date(),
+          createdBy: auth.currentUser.uid,
+          createdByName: auth.currentUser.displayName,
+        });
+
+        // Update the local state of comments to include the new comment
+        setComments(prevComments => [...prevComments, {
+          id: newCommentRef.id,
+          content: newComment,
+          createdAt: new Date(),
+          createdBy: auth.currentUser.uid,
+          createdByName: auth.currentUser.displayName,
+        }]);
+
+        // Refresh post data without updating the local state of comments
+        refreshPostData();
+
+        // Close the modal after adding the comment
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error adding comment:', error.message, error);
     }
   };
 
   return (
-    <Modal transparent={true} animationType="slide" visible={visible}>
+    <Modal transparent={true} visible={visible} animationType="slide">
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <View style={styles.topBar}>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <Pressable onPress={() => onClose()} style={styles.closeButton}>
               <Icon name="close" size={30} color="red" />
-            </TouchableOpacity>
+            </Pressable>
           </View>
           <ScrollView>
             <View style={styles.formContainer}>
@@ -59,52 +105,46 @@ const PostDetailsModal = ({ visible, post, onClose }) => {
               <Text style={styles.content}>{title}</Text>
               <Text style={styles.label}>Content:</Text>
               <Text style={styles.content}>{content}</Text>
-
-              {/* Display like and dislike counts */}
+              <Text style={styles.label}>Created By:</Text>
+              <Text style={styles.content}>{createdByName}</Text>
               <View style={styles.likesContainer}>
-                <TouchableOpacity onPress={handleLike} style={styles.likeButton}>
-                  <Icon name="thumb-up" size={20} color="green" />
-                  <Text style={styles.likeButtonText}>Like</Text>
-                </TouchableOpacity>
-                <Text style={styles.likeCount}>{likes}</Text>
+                <Icon name="thumb-up" size={20} color="green" />
+                <Text style={styles.likeCount}>{likes} Likes</Text>
               </View>
-
               <View style={styles.dislikesContainer}>
-                <TouchableOpacity onPress={handleDislike} style={styles.dislikeButton}>
-                  <Icon name="thumb-down" size={20} color="red" />
-                  <Text style={styles.dislikeButtonText}>Dislike</Text>
-                </TouchableOpacity>
-                <Text style={styles.dislikeCount}>{dislikes}</Text>
+                <Icon name="thumb-down" size={20} color="red" />
+                <Text style={styles.dislikeCount}>{dislikes} Dislikes</Text>
               </View>
-
-              {/* Display comments */}
-              <View style={styles.commentsContainer}>
-                <Text style={styles.commentsHeader}>Comments:</Text>
-                {comments.map((comment, index) => (
-                  <Text key={index} style={styles.commentText}>{comment}</Text>
-                ))}
-              </View>
-
-              {/* Add comment section */}
-              <TextInput
-                style={styles.commentInput}
-                value={newComment}
-                onChangeText={(text) => setNewComment(text)}
-                placeholder="Add a comment..."
-                multiline={true}
-              />
-              <TouchableOpacity onPress={handleAddComment} style={styles.commentButton}>
-                <Text style={styles.commentButtonText}>Add Comment</Text>
-              </TouchableOpacity>
             </View>
+            {comments.map((comment, index) => (
+              <View key={`${comment.id}-${index}`}>
+                <View>
+                  <Text>{comment.content}</Text>
+                  <Text>{comment.createdByName}</Text>
+                  {comment.createdAt instanceof Date ? (
+                    <Text>{comment.createdAt.toLocaleString()}</Text>
+                  ) : (
+                    <Text>{new Date(comment.createdAt.toDate()).toLocaleString()}</Text>
+                  )}
+                </View>
+              </View>
+            ))}
+            <TextInput
+              style={styles.commentInput}
+              placeholder="Add a comment..."
+              multiline={true}
+              value={newComment}
+              onChangeText={(text) => setNewComment(text)}
+            />
+            <Pressable onPress={handleAddComment} style={styles.commentButton}>
+              <Text style={styles.commentButtonText}>Add Comment</Text>
+            </Pressable>
           </ScrollView>
         </View>
       </View>
     </Modal>
   );
 };
-
-  
 
 const styles = StyleSheet.create({
   modalContainer: {
@@ -161,7 +201,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'green',
   },
-
   dislikesContainer: {
     flexDirection: 'row',
     alignItems: 'center',

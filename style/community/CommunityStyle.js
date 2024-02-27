@@ -1,29 +1,41 @@
-// styles.js
 import { StyleSheet } from 'react-native';
-import { allCommunityStyles } from './AllCommunityStyle';
 
 const communityStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-  },
-  heading: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  postContainer: {
-    marginBottom: 20,
-  },
-  post: {
-    border: '1px solid #ccc',
-    padding: 10,
-    marginVertical: 10,
-  },
-  postTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
+    container: {
+        flex: 1,
+        padding: 20,
+    },
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    postInput: {
+        flex: 1,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 8,
+        padding: 10,
+        marginRight: 10,
+    },
+    postContainer: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 8,
+        padding: 10,
+        marginBottom: 10,
+        position: 'relative',
+    },
+    postTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 5,
+    },
+    editButton: {
+        position: 'absolute',
+        top: 0,
+        right: 0,
+    },
 });
 
 export default communityStyles;

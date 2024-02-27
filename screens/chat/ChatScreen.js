@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, Image, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Pressable, FlatList, Image, StyleSheet } from 'react-native';
 import { chatStyles } from '../../style/chat/ChatStyle';
 
 const ChatScreen = () => {
@@ -54,9 +54,9 @@ const ChatScreen = () => {
           value={inputText}
           onChangeText={(text) => setInputText(text)}
         />
-        <TouchableOpacity style={chatStyles.sendButton} onPress={handleSend}>
+        <Pressable style={chatStyles.sendButton} onPress={handleSend}>
           <Text style={chatStyles.sendButtonText}>ส่ง</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </View>
   );

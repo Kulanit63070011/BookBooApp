@@ -1,6 +1,6 @@
 // CalendarCommunityScreen.js
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, SafeAreaView, Pressable } from 'react-native';
 import { calendarCommuStyles } from '../../../style/community/calendar/CalendarCommuStyle';
 import CalendarDetailsModal from '../../../components/Community/Calendar/CalendarDetailsModal';
 
@@ -25,7 +25,7 @@ const CalendarCommunityScreen = () => {
   }, []);
 
   const renderEventItem = ({ item }) => (
-    <TouchableOpacity
+    <Pressable
       style={calendarCommuStyles.card}
       onPress={() => {
         setSelectedEvent(item);
@@ -34,7 +34,7 @@ const CalendarCommunityScreen = () => {
     >
       <Text style={calendarCommuStyles.eventName}>{item.eventName}</Text>
       <Text style={calendarCommuStyles.timestamp}>{item.timestamp.toDateString()}</Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 
   return (

@@ -1,61 +1,91 @@
+
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, TextInput } from 'react-native';
-import { createCommuStyles } from '../../style/community/CreateCommuStyle';
-import BottomNavigator from '../../navigation/BottomNavigator';
+import { View, Text, Pressable, TextInput } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, db } from '../../backend/firebase';
+import { createCommunityStyles } from '../../style/community/CreateCommunityStyle';
 
-const CreateCommunityScreen = ({ visible, communityDetails, onClose, onDelete, onSave }) => {
-  const [updatedDetails, setUpdatedDetails] = useState({
-    name: communityDetails ? communityDetails.name : '',
-    description: communityDetails ? communityDetails.description : '',
-    category: communityDetails ? communityDetails.category : '',
-    coverImage: communityDetails ? communityDetails.coverImage : '',
-  });
+const CreateCommunityScreen = () => {
+  const navigation = useNavigation();
+  const [type, setType] = useState('');
+  const [name, setName] = useState('');
+  const [imageCommu, setImageCommu] = useState('');
+  const [description, setDescription] = useState('');
+  const [createdBy, setCreatedBy] = useState('');
+  const [createdDate, setCreatedDate] = useState('');
 
-  const handleInputChange = (property, value) => {
-    setUpdatedDetails({
-      ...updatedDetails,
-      [property]: value,
-    });
-  };
+  const handleCreateCommunity = async () => {
+    try {
+      const user = auth.currentUser;
 
-  const handleSave = () => {
-    onSave(updatedDetails);
+      if (!type || !name || !user) {
+        alert('Please fill in required information (Type, Name, and Creator)');
+        return;
+      }
+
+      // Use the user's UID as the creator of the community
+      const createdByUser = user.uid;
+
+      // Use the current timestamp as the creation date
+      const creationTimestamp = new Date();
+
+      // Use the user's UID as a member of the community
+      const membersArray = [createdByUser];
+
+      const communityData = {
+        communityId: name,
+        type,
+        name,
+        imageCommu,
+        description,
+        members: membersArray,
+        createdBy: createdByUser,
+        createdDate: creationTimestamp,
+      };
+
+      const communityDocRef = doc(db, 'communities', name);
+      await setDoc(communityDocRef, communityData);
+
+      alert('Community created successfully');
+
+      navigation.navigate('AllCommunity', { refresh: true });
+    } catch (error) {
+      console.error('Error creating community:', error.message);
+    }
   };
 
   return (
-    <View style={createCommuStyles.modalContainer}>
-      <View style={createCommuStyles.topBar}>
-      </View>
-      <View style={createCommuStyles.modalContent}>
-        <Text style={createCommuStyles.label}>Community Image:</Text>
+    <View style={createCommunityStyles.container}>
+      <View style={createCommunityStyles.content}>
+        <Text style={createCommunityStyles.label}>ประเภท:</Text>
         <TextInput
-          style={createCommuStyles.input}
-          value={updatedDetails.coverImage}
-          onChangeText={(text) => handleInputChange('coverImage', text)}
+          style={createCommunityStyles.input}
+          value={type}
+          onChangeText={(text) => setType(text)}
         />
-        <Text style={createCommuStyles.label}>Community Name:</Text>
+        <Text style={createCommunityStyles.label}>ชื่อ:</Text>
         <TextInput
-          style={createCommuStyles.input}
-          value={updatedDetails.name}
-          onChangeText={(text) => handleInputChange('name', text)}
+          style={createCommunityStyles.input}
+          value={name}
+          onChangeText={(text) => setName(text)}
         />
-        <Text style={createCommuStyles.label}>Category:</Text>
+        <Text style={createCommunityStyles.label}>รูปภาพ:</Text>
         <TextInput
-          style={createCommuStyles.input}
-          value={updatedDetails.category}
-          onChangeText={(text) => handleInputChange('category', text)}
+          style={createCommunityStyles.input}
+          value={imageCommu}
+          onChangeText={(text) => setImageCommu(text)}
         />
-        <Text style={createCommuStyles.label}>Description:</Text>
+        <Text style={createCommunityStyles.label}>รายละเอียด:</Text>
         <TextInput
-          style={[createCommuStyles.input, { height: 80 }]}
-          value={updatedDetails.description}
-          onChangeText={(text) => handleInputChange('description', text)}
-          multiline={true}
+          style={createCommunityStyles.input}
+          value={description}
+          onChangeText={(text) => setDescription(text)}
         />
       </View>
-      <TouchableOpacity onPress={handleSave} style={createCommuStyles.actionButton}>
-        <Text style={createCommuStyles.buttonText}>Save</Text>
-      </TouchableOpacity>
+      <Pressable onPress={handleCreateCommunity} style={createCommunityStyles.button}>
+        <Text style={createCommunityStyles.buttonText}>สร้างชุมชน</Text>
+      </Pressable>
     </View>
   );
 };

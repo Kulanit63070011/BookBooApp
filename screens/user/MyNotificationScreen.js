@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, SafeAreaView, Pressable } from 'react-native';
 import { myNotificationStyles } from '../../style/user/MyNotificationStyle';
 
 const MyNotificationScreen = () => {
@@ -37,11 +37,11 @@ const MyNotificationScreen = () => {
   return (
     <SafeAreaView style={myNotificationStyles.container}>
       <View style={myNotificationStyles.contentContainer}>
-        <TouchableOpacity onPress={markAllAsSeen} style={myNotificationStyles.markAsSeenButton}>
+        <Pressable onPress={markAllAsSeen} style={myNotificationStyles.markAsSeenButton}>
           <Text style={myNotificationStyles.markAsSeenText}>
             {allSeen ? 'All Marked as Seen' : 'Mark All as Seen'}
           </Text>
-        </TouchableOpacity>
+        </Pressable>
         {notifications.length > 0 ? (
           <FlatList
             data={notifications}

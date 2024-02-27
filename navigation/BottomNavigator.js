@@ -1,27 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, View, Text, Pressable, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 const BottomNavigator = () => {
     const navigation = useNavigation();
     return (
         <View style={styles.container}>
-            <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('SignUp')}>
+            <Pressable style={styles.navItem} onPress={() => navigation.navigate('AllCommunity')}>
                 <Image source={require('../assets/images/human.png')} style={styles.icon} />
                 <Text style={styles.navText}>หาปาร์ตี้</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('SignUp')}>
+            </Pressable>
+            <Pressable style={styles.navItem} onPress={() => navigation.navigate('MyCommunity')}>
                 <Image source={require('../assets/images/human.png')} style={styles.icon} />
                 <Text style={styles.navText}>ปาร์ตี้ของฉัน</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('SignUp')}>
+            </Pressable>
+            <Pressable style={styles.navItem} onPress={() => navigation.navigate('Community')}>
                 <Image source={require('../assets/images/human.png')} style={styles.icon} />
                 <Text style={styles.navText}>แชท</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('SignUp')}>
+            </Pressable>
+            <Pressable style={styles.navItem} onPress={() => navigation.navigate('MyProfile')}>
                 <Image source={require('../assets/images/human.png')} style={styles.icon} />
                 <Text style={styles.navText}>โปรไฟล์</Text>
-            </TouchableOpacity>
+            </Pressable>
         </View>
     );
 };

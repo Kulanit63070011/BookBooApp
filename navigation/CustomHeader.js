@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { ArrowLeftIcon } from 'react-native-heroicons/solid';
 import { useNavigation } from '@react-navigation/native';
 
@@ -8,9 +8,9 @@ const CustomHeader = ({ title }) => {
 
   return (
     <View style={styles.headerContainer}>
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+      <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
         <ArrowLeftIcon size={20} color="white" />
-      </TouchableOpacity>
+      </Pressable>
       <Text style={styles.headerTitle}>{title}</Text>
     </View>
   );

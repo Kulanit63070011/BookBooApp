@@ -1,17 +1,17 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 const BookColumnOfCards = ({ cards, onPress }) => {
   return (
     <View style={styles.container}>
       {cards.map((book, index) => (
-        <TouchableOpacity key={index} onPress={() => onPress(book)}>
+        <Pressable key={index} onPress={() => onPress(book)} style={{ userSelect: 'auto' }}>
           <View style={styles.cardContainer}>
             <Text style={styles.cardTitle}>{book.title}</Text>
             <Text style={styles.cardAuthor}>{book.author}</Text>
-            <Text style={styles.cardText}>{book.cardText}</Text>
+            <Text style={styles.cardText}>{book.aboutBook}</Text>
           </View>
-        </TouchableOpacity>
+        </Pressable>
       ))}
     </View>
   );

@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, StyleSheet, TextInput } from 'react-native';
+import { View, Text, Pressable, TextInput } from 'react-native';
 import { createMyBookStyles } from '../../style/bookshelf/CreateMyBookStyle';
 
 const EditMyBookScreen = ({ visible, bookDetails, onClose, onDelete, onSave }) => {
     const [updatedDetails, setUpdatedDetails] = useState({
-        // Set initial state based on bookDetails or provide default values
         title: bookDetails ? bookDetails.title : '',
+        type: bookDetails ? bookDetails.type : '',
         author: bookDetails ? bookDetails.author : '',
         purchaseDate: bookDetails ? bookDetails.purchaseDate : '',
-        coverImage: bookDetails ? bookDetails.coverImage : '',
+        aboutBook: bookDetails ? bookDetails.aboutBook : '',
     });
 
     const handleInputChange = (property, value) => {
@@ -25,6 +25,12 @@ const EditMyBookScreen = ({ visible, bookDetails, onClose, onDelete, onSave }) =
     return (
         <View style={createMyBookStyles.modalContainer}>
             <View style={createMyBookStyles.topBar}>
+                <Pressable onPress={onClose} style={createMyBookStyles.closeButton}>
+                    <Text style={createMyBookStyles.buttonText}>Close</Text>
+                </Pressable>
+                <Pressable onPress={onDelete} style={createMyBookStyles.deleteButton}>
+                    <Text style={createMyBookStyles.buttonText}>Delete</Text>
+                </Pressable>
             </View>
             <View style={createMyBookStyles.modalContent}>
                 <Text style={createMyBookStyles.label}>Cover Image:</Text>
@@ -65,9 +71,9 @@ const EditMyBookScreen = ({ visible, bookDetails, onClose, onDelete, onSave }) =
                     multiline={true}
                 />
             </View>
-            <TouchableOpacity onPress={handleSave} style={createMyBookStyles.actionButton}>
+            <Pressable onPress={handleSave} style={createMyBookStyles.actionButton}>
                 <Text style={createMyBookStyles.buttonText}>Save</Text>
-            </TouchableOpacity>
+            </Pressable>
         </View>
     );
 };

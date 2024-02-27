@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, TextInput, StyleSheet, ScrollView } from 'react-native';
+import { Modal, View, Text, Pressable, TextInput, StyleSheet, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const UserDetailsModal = ({ visible, communityDetails, onClose, onDelete, onJoinCommunity }) => {
@@ -28,9 +28,9 @@ const UserDetailsModal = ({ visible, communityDetails, onClose, onDelete, onJoin
     <Modal visible={visible} animationType="slide">
       <View style={styles.modalContainer}>
         <View style={styles.topBar}>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+          <Pressable onPress={onClose} style={styles.closeButton}>
             <Icon name="close" size={30} color="white" />
-          </TouchableOpacity>
+          </Pressable>
         </View>
         <ScrollView>
           <View style={styles.modalContent}>
@@ -39,9 +39,9 @@ const UserDetailsModal = ({ visible, communityDetails, onClose, onDelete, onJoin
             <Text style={styles.label}>Description:</Text>
           </View>
         </ScrollView>
-        <TouchableOpacity onPress={handleJoinCommunity} style={styles.actionButton}>
+        <Pressable onPress={handleJoinCommunity} style={styles.actionButton}>
           <Text style={styles.buttonText}>Join Community</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </Modal>
   );

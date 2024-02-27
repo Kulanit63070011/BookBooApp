@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, TextInput } from 'react-native';
+import { View, Text, Pressable, Modal, TextInput } from 'react-native';
 import BottomNavigator from '../../../navigation/BottomNavigator';
 import { createCommuStyles } from '../../../style/community/CreateCommuStyle';
 
@@ -67,12 +67,12 @@ const EditCalendarScreen = ({ visible, communityDetails, onClose, onDelete, onSa
                     multiline={true}
                 />
             </View>
-            <TouchableOpacity onPress={handleSave} style={createCommuStyles.actionButton}>
+            <Pressable onPress={handleSave} style={createCommuStyles.actionButton}>
                 <Text style={createCommuStyles.buttonText}>sav edit</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleSave} style={createCommuStyles.actionButton}>
+            </Pressable>
+            <Pressable onPress={handleSave} style={createCommuStyles.actionButton}>
                 <Text style={createCommuStyles.buttonText}>delete</Text>
-            </TouchableOpacity>
+            </Pressable>
         </View>
     );
 };
