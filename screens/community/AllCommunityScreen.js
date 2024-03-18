@@ -3,12 +3,12 @@ import { View, Text, TextInput, Image, Pressable, ScrollView, SafeAreaView } fro
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { collection, getDocs, onSnapshot } from 'firebase/firestore';
 import { db } from '../../backend/firebase';
-import { allCommunityStyles } from '../../style/community/AllCommunityStyle';
 import CommuColumnOfCards from '../../components/Community/CommuColumnOfCards';
 import CommunityDetailsModal from '../../components/Community/CommunityDetailsModal';
 import FloatingButton from '../../components/common/FloatingAddButton';
 import BottomNavigator from '../../navigation/BottomNavigator';
 import SearchBar from '../../components/common/searchBar';
+import { allCommunityStyles } from '../../style/community/AllCommunityStyle';
 import { signUpStyles } from '../../style/user/SignUpStyle';
 
 const AllCommunityScreen = () => {

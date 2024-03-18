@@ -43,7 +43,6 @@ export const createMyBookStyles = StyleSheet.create({
   modalImage: {
     width: 150,
     height: 200,
-    resizeMode: 'cover',
     borderRadius: 10,
     alignSelf: 'center',
     marginTop: 20,

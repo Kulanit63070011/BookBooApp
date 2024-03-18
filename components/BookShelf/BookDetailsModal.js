@@ -35,7 +35,11 @@ const BookDetailsModal = ({ visible, bookDetails, onClose, onDelete, onSave }) =
           </View>
           <ScrollView>
             <View style={styles.formContainer}>
-              <Image source={require('../../assets/images/bookcover.png')} style={styles.modalImage} />
+              <Image
+                source={require('../../assets/images/bookcover.png')}
+                resizeMode="cover"
+                style={styles.modalImage}
+              />
               <Text style={styles.label}>Book Title:</Text>
               <TextInput
                 style={styles.input}
@@ -103,8 +107,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 20,
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
   closeButton: {
@@ -147,7 +151,6 @@ const styles = StyleSheet.create({
   modalImage: {
     width: 150,
     height: 200,
-    resizeMode: 'cover',
     borderRadius: 10,
     alignSelf: 'center',
     marginTop: 20,

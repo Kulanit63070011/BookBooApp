@@ -8,7 +8,7 @@ const BookColumnOfCards = ({ cards, onPress }) => {
         <Pressable key={index} onPress={() => onPress(book)} style={{ userSelect: 'auto' }}>
           <View style={styles.cardContainer}>
             <View style={styles.imageContainer}>
-              <Image source={require('../../assets/images/bookcover.png')} style={styles.bookImage} />
+              <Image source={require('../../assets/images/bookcover.png')} resizeMode="contain" style={styles.bookImage} />
             </View>
             <View style={styles.textContainer}>
               <Text style={styles.cardTitle}>{book.title}</Text>
@@ -62,9 +62,8 @@ const styles = StyleSheet.create({
     color: 'white', // Set text color to white
   },
   bookImage: {
-    width: '100%', 
-    height: '100%', 
-    resizeMode: 'contain', 
+    width: '100%',
+    height: '100%',
   },
 });
 

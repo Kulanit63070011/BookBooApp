@@ -57,7 +57,7 @@ const CreateCommunityScreen = () => {
   return (
     <View style={createCommunityStyles.container}>
       <View style={createCommunityStyles.bookImageContainer}>
-        <Image source={require('../../assets/images/commuImg.png')} style={createCommunityStyles.bookImage} resizeMode="contain" />
+      <Image source={require('../../assets/images/commuImg.png')} resizeMode="contain" style={createCommunityStyles.bookImage} />
         <Pressable style={createCommunityStyles.addButton}>
           <Text style={createCommunityStyles.addButtonIcon}>+</Text>
         </Pressable>

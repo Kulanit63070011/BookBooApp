@@ -22,8 +22,8 @@ export const WelcomeStyle = StyleSheet.create({
     justifyContent: 'center',
   },
   image: {
-    width: 450,
-    height: 450,
+    width: 380,
+    height: 380,
   },
   buttonContainer: {
     marginTop: 20,
@@ -34,14 +34,14 @@ export const WelcomeStyle = StyleSheet.create({
     width: '100%',
     paddingVertical: 15,
     paddingHorizontal: 20,
-    backgroundColor: '#F04B27',
+    backgroundColor: '#ed4a12',
     borderRadius: 20,
     alignSelf: 'center', // Align the button to the center horizontally
   },
   buttonText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: 'white',
     textAlign: 'center',
   },
   loginContainer: {

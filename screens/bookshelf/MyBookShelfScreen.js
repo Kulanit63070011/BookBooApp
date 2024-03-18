@@ -5,16 +5,15 @@ import BottomNavigator from '../../navigation/BottomNavigator';
 import FloatingButton from '../../components/common/FloatingAddButton';
 import BookDetailsModal from '../../components/BookShelf/BookDetailsModal';
 import BookColumnOfCards from '../../components/BookShelf/BookColumnOfCards';
+import SearchBar from '../../components/common/searchBar';
 import { myBookShelfStyles } from '../../style/bookshelf/MyBookShelfStyle';
 import { signUpStyles } from '../../style/user/SignUpStyle';
 import { allCommunityStyles } from '../../style/community/AllCommunityStyle';
 import { auth, db } from '../../backend/firebase';
-import SearchBar from '../../components/common/searchBar';
-import { collection, getDocs, query, where, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 const MyBookShelfScreen = () => {
   const navigation = useNavigation();
-
   const [books, setBooks] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -104,7 +103,7 @@ const MyBookShelfScreen = () => {
         </View>
       </SafeAreaView>
       <View style={[myBookShelfStyles.contentContainer]}>
-        <SearchBar/>
+        <SearchBar />
         <ScrollView>
           <View style={{ userSelect: 'none' }} >
             {Array.isArray(books) && books.length > 0 ? (

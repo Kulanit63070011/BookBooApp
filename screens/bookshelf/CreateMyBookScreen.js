@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, TextInput, ScrollView, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { doc, collection, addDoc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../../backend/firebase';
 import { createMyBookStyles } from '../../style/bookshelf/CreateMyBookStyle';
 
@@ -16,18 +16,18 @@ const CreateMyBookScreen = () => {
   const handleSaveToFirestore = async (bookData) => {
     try {
       const user = auth.currentUser;
-  
+
       if (!user) {
         console.error('User not found.');
         return;
       }
-  
+
       const bookshelfId = user.uid; // ใช้ UID ของผู้ใช้เป็น bookshelfId
-  
+
       // ตรวจสอบว่ามีชั้นหนังสือของผู้ใช้อยู่แล้วหรือไม่
       const bookshelfRef = doc(db, 'bookshelves', bookshelfId);
       const bookshelfSnap = await getDoc(bookshelfRef);
-  
+
       if (!bookshelfSnap.exists()) {
         // ถ้าไม่มีให้สร้างชั้นหนังสือใหม่ของผู้ใช้
         await setDoc(bookshelfRef, { books: [bookData] });
@@ -36,15 +36,15 @@ const CreateMyBookScreen = () => {
         const existingBooks = bookshelfSnap.data().books || [];
         await updateDoc(bookshelfRef, { books: [...existingBooks, bookData] });
       }
-  
+
       alert('Book saved successfully');
     } catch (error) {
       console.error('Error saving book to Firestore:', error.message);
       throw error;
     }
   };
-  
-  
+
+
   const handleSave = async () => {
     try {
       const user = auth.currentUser;
@@ -63,7 +63,6 @@ const CreateMyBookScreen = () => {
           purchaseDate,
           aboutBook,
           userId: user.uid,
-          bookshelfId: 'weqoOmYwAwQDoN5Mn8Mn' // ระบุ bookshelfId ที่คุณต้องการเก็บหนังสือไว้
         };
 
         await handleSaveToFirestore(bookData);
@@ -88,7 +87,7 @@ const CreateMyBookScreen = () => {
   return (
     <ScrollView>
       <View style={createMyBookStyles.modalContainer}>
-        <Image source={require('../../assets/images/bookcover.png')} style={createMyBookStyles.modalImage} /> 
+        <Image source={require('../../assets/images/bookcover.png')} resizeMode="cover" style={createMyBookStyles.modalImage} />
         <View style={createMyBookStyles.modalContent}>
           <Text style={createMyBookStyles.label}>Book Title:</Text>
           <TextInput

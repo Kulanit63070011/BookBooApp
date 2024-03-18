@@ -69,7 +69,7 @@ const CommunityDetailsModal = ({ visible, communityDetails, onClose, onDelete, o
             {/* Display community details */}
             <View style={styles.content}>
               <View style={{alignItems: 'center'}}>
-                <Image source={require('../../assets/images/bookcover.png')} style={styles.bookImage} />
+                <Image source={require('../../assets/images/bookcover.png')} resizeMode="contain" style={styles.bookImage} />
               </View>
               <Text style={styles.label}>Community Name:</Text>
               <Text style={styles.detail}>{name}</Text>
@@ -154,7 +154,6 @@ const styles = StyleSheet.create({
   bookImage: {
     width: 170,
     height: 200,
-    resizeMode: 'contain',
   },
 });
 

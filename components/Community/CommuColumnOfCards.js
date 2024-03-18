@@ -7,7 +7,7 @@ const CommuColumnOfCards = ({ cards, onPress, cardWidth }) => {
       {cards.map((community, index) => (
         <Pressable key={index} onPress={() => onPress(community)} style={{userSelect: 'auto'}}>
           <View style={styles.cardContainer}>
-            <Image source={require('../../assets/images/bookcover.png')} style={styles.cardImage} />
+            <Image source={require('../../assets/images/bookcover.png')} resizeMode="cover" style={styles.cardImage} />
             <View style={styles.cardTextContainer}>
               <Text style={styles.cardTitle}>{community.name}</Text>
               <Text style={styles.cardText}>{community.description}</Text>
@@ -40,7 +40,6 @@ const styles = StyleSheet.create({
   },
   cardImage: {
     width: '30%', // ปรับขนาดของรูปภาพตามที่ต้องการ
-    resizeMode: 'cover',
     borderRadius: 10, // จัดให้มีขอบโค้งตาม container
     height: '95%',
   },

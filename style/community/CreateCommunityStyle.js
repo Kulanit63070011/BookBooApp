@@ -43,7 +43,6 @@ export const createCommunityStyles = StyleSheet.create({
   bookImage: {
     width: 170, 
     height: 200, 
-    resizeMode: 'contain',
     borderRadius: 30,
   },
   addButton: {

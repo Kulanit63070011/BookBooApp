@@ -20,6 +20,11 @@ import MyProfileScreen from '../screens/user/MyProfileScreen';
 import MyNotificationScreen from '../screens/user/MyNotificationScreen';
 import CalendarCommunityScreen from '../screens/community/calendar/CalendarCommunityScreen';
 import CommunityScreen from '../screens/community/CommunityScreen';
+import AllSharedBookScreen from '../screens/market/sharedBook/AllSharedBookScreen';
+import CreateSharedBookScreen from '../screens/market/sharedBook/CreateSharedBookScreen';
+import EditSharedBookScreen from '../screens/market/sharedBook/EditSharedBookScreen';
+import PromotionScreen from '../screens/market/promotion/PromotionScreen';
+import CreatePromotionScreen from '../screens/market/promotion/CreatePromotionScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -136,6 +141,31 @@ const AppNavigation = () => {
           name="EditCalendar"
           options={{ headerShown: true }}
           component={EditCalendarScreen}
+        />
+        <Stack.Screen
+          name="AllSharedBook"
+          options={{ headerShown: true }}
+          component={AllSharedBookScreen}
+        />
+        <Stack.Screen
+          name="CreateSharedBook"
+          options={{ headerShown: true }}
+          component={CreateSharedBookScreen}
+        />
+        <Stack.Screen
+          name="EditSharedBook"
+          options={{ headerShown: true }}
+          component={EditSharedBookScreen}
+        />
+        <Stack.Screen
+          name="Promotion"
+          options={{ headerShown: true }}
+          component={PromotionScreen}
+        />
+        <Stack.Screen
+          name="CreatePromotion"
+          options={{ headerShown: true }}
+          component={CreatePromotionScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>
