@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, View, Text, Pressable, ScrollView, StyleSheet, Image } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { db } from '../../backend/firebase'; // Import db จาก firebase
 import { addDoc, collection } from 'firebase/firestore'; // เพิ่ม collection และ addDoc ไปในการนำเข้า
@@ -35,7 +35,7 @@ const UserDetailsModal = ({ visible, userDetails, onClose, partnerUid, handleCre
       <View style={styles.modalContainer}>
         <View style={styles.topBar}>
           <Pressable onPress={onClose} style={styles.closeButton}>
-            <Icon name="close" size={30} color="white" />
+            <MaterialIcons name="close" size={30} color="white" />
           </Pressable>
         </View>
         <ScrollView>

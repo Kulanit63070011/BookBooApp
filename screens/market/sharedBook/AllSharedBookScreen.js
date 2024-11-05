@@ -10,8 +10,8 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../backend/firebase';
 import { onSnapshot } from 'firebase/firestore';
 import { auth } from '../../../backend/firebase';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import EditSharedBookScreen from './EditSharedBookScreen'; // เพิ่มการนำเข้า EditSharedBookScreen
+import { MaterialIcons } from '@expo/vector-icons';
+import MarketNavigationButtons from '../../../components/Market/MarketNavigationButtons';
 
 const AllSharedBookScreen = ({ navigation }) => {
   const [books, setBooks] = useState([]);
@@ -59,7 +59,7 @@ const AllSharedBookScreen = ({ navigation }) => {
     if (auth.currentUser && book.ownerSharedBook === auth.currentUser.uid) {
       return (
         <Pressable onPress={() => handleEditBook(book)} style={{ userSelect: 'auto' }}>
-          <Icon name="edit" size={24} color="black" />
+          <MaterialIcons name="edit" size={24} color="black" />
         </Pressable>
       );
     }
@@ -78,6 +78,7 @@ const AllSharedBookScreen = ({ navigation }) => {
         </View>
       </SafeAreaView>
       <View style={signUpStyles.contentContainer}>
+        <MarketNavigationButtons/>
         <SearchBar />
         <ScrollView>
           <View style={{ marginVertical: 20 }}>

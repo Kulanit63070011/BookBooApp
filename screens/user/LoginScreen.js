@@ -3,8 +3,9 @@ import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native';
 import { loginStyles } from '../../style/user/LoginStyle';
-import { auth } from '../../backend/firebase';
-import { signInWithEmailAndPassword } from '../../backend/firebase';
+import { auth, signInWithEmailAndPassword } from '../../backend/firebase'; // ปรับเปลี่ยนการ import ให้รวม analytics ด้วย
+import { analytics } from '../../backend/firebase';
+import { getAnalytics, logEvent } from 'firebase/analytics';
 
 export default function LoginScreen() {
   const navigation = useNavigation();
@@ -16,9 +17,23 @@ export default function LoginScreen() {
       // ทำการล็อกอินด้วย Firebase Authentication
       await signInWithEmailAndPassword(auth, email, password);
       console.log('Login successful');
-      navigation.navigate('AllCommunity')
-      // navigation.navigate('CreateCalendar')
-      // ทำสิ่งที่ต้องการหลังจากล็อกอิน
+      navigation.navigate('AllCommunity');
+      console.log('JJ')
+      // const analytics = getAnalytics();
+      // logEvent(analytics, 'notification_received');
+      // บันทึกเหตุการณ์การเข้าสู่ระบบ
+      // const analytics = getAnalytics();
+      // await analytics.logEvent('login', {
+      //   method: 'email',
+      // });  
+      const analytics = getAnalytics();
+      logEvent(analytics, 'loginKK', {
+        method: 'email',
+      });
+      console.log('JJII')
+
+      // แสดง Alert เมื่อเข้าสู่ระบบสำเร็จและเชื่อมต่อกับ Firebase Analytics ได้
+
     } catch (error) {
       console.error('Login failed', error.message);
       // จัดการข้อผิดพลาด

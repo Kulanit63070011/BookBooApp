@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, Pressable, StyleSheet, ScrollView, TextInput } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { addDoc, collection, query, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../../backend/firebase';
 
@@ -96,7 +96,7 @@ const PostDetailsModal = ({ visible, post, onClose, refreshPostData, communityId
         <View style={styles.modalContent}>
           <View style={styles.topBar}>
             <Pressable onPress={() => onClose()} style={styles.closeButton}>
-              <Icon name="close" size={30} color="red" />
+              <MaterialIcons name="close" size={30} color="red" />
             </Pressable>
           </View>
           <ScrollView>
@@ -105,9 +105,9 @@ const PostDetailsModal = ({ visible, post, onClose, refreshPostData, communityId
               <Text style={styles.content}>{content}</Text>
               <Text style={styles.createdBy}>By {createdByName}</Text>
               <View style={styles.likesContainer}>
-                <Icon name="thumb-up" size={20} color="green" />
+                <MaterialIcons name="thumb-up" size={20} color="green" />
                 <Text style={styles.likeCount}>{likes} Likes</Text>
-                <Icon name="thumb-down" size={20} color="red" />
+                <MaterialIcons name="thumb-down" size={20} color="red" />
                 <Text style={styles.dislikeCount}>{dislikes} Dislikes</Text>
               </View>
             </View>

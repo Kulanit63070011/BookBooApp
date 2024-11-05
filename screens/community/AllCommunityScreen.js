@@ -10,19 +10,19 @@ import BottomNavigator from '../../navigation/BottomNavigator';
 import SearchBar from '../../components/common/searchBar';
 import { allCommunityStyles } from '../../style/community/AllCommunityStyle';
 import { signUpStyles } from '../../style/user/SignUpStyle';
+import FilterByPopup from '../../components/Community/FilterByModal';
+import { MaterialIcons } from '@expo/vector-icons';
+import CommunityNavigationButtons from '../../components/Community/CommunityNavigationButtons';
 
 const AllCommunityScreen = () => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
 
-  const [newCommunity, setNewCommunity] = useState({
-    name: '',
-    description: '',
-  });
-
+  const [newCommunity, setNewCommunity] = useState({name: '', description: '',});
   const [communities, setCommunities] = useState([]);
   const [selectedCommunity, setSelectedCommunity] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isFilterVisible, setIsFilterVisible] = useState(false); // เพิ่ม state สำหรับการควบคุมการแสดง FilterByPopup
 
   const addCommunity = () => {
     // ... (No changes here)
@@ -68,11 +68,15 @@ const AllCommunityScreen = () => {
         </View>
       </SafeAreaView>
       <View style={allCommunityStyles.contentContainer}>
+        <CommunityNavigationButtons />
         <SearchBar
           value={newCommunity.name}
           onChange={(text) => setNewCommunity({ ...newCommunity, name: text })}
           onSearch={() => alert('Perform search')}
         />
+        <Pressable onPress={() => setIsFilterVisible(true)}>
+          <MaterialIcons name="filter-list" size={24} color="black" />
+        </Pressable>
         <ScrollView>
           <View>
             {communities.length > 0 ? (
@@ -91,6 +95,8 @@ const AllCommunityScreen = () => {
         onClose={() => setIsModalVisible(false)}
         onDelete={deleteCommunity}
       />
+      {/* แสดง FilterByPopup ถ้า isFilterVisible เป็น true */}
+      {isFilterVisible && <FilterByPopup />}
     </View>
   );
 };

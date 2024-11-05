@@ -62,7 +62,6 @@ const CreateMyBookScreen = () => {
           author,
           purchaseDate,
           aboutBook,
-          userId: user.uid,
         };
 
         await handleSaveToFirestore(bookData);

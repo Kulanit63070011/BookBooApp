@@ -6,15 +6,15 @@ const BottomNavigator = () => {
     const navigation = useNavigation();
     return (
         <View style={styles.container}>
-            <Pressable style={styles.navItem} onPress={() => navigation.navigate('MyCommunity')}>
+            <Pressable style={styles.navItem} onPress={() => navigation.navigate('AllCommunity')}>
                 <Image source={require('../assets/images/human.png')} style={styles.icon} />
                 <Text style={styles.navText}>Community</Text>
             </Pressable>
-            <Pressable style={styles.navItem} onPress={() => navigation.navigate('AllSharedBook')}>
+            <Pressable style={styles.navItem} onPress={() => navigation.navigate('Promotion')}>
                 <Image source={require('../assets/images/human.png')} style={styles.icon} />
                 <Text style={styles.navText}>Market</Text>
             </Pressable>
-            <Pressable style={styles.navItem} onPress={() => navigation.navigate('Promotion')}>
+            <Pressable style={styles.navItem} onPress={() => navigation.navigate('MyBookShelf')}>
                 <Image source={require('../assets/images/human.png')} style={styles.icon} />
                 <Text style={styles.navText}>Chat</Text>
             </Pressable>

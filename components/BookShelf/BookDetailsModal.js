@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, Pressable, TextInput, StyleSheet, ScrollView, Image } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const BookDetailsModal = ({ visible, bookDetails, onClose, onDelete, onSave }) => {
   if (!visible || !bookDetails) {
@@ -30,7 +30,7 @@ const BookDetailsModal = ({ visible, bookDetails, onClose, onDelete, onSave }) =
           <View style={[styles.topBar]}>
             <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold', fontSize: 25 }}>Edit My Book</Text>
             <Pressable onPress={onClose} style={[styles.closeButton, { userSelect: 'none' }]}>
-              <Icon name="close" size={30} color="white" />
+              <MaterialIcons name="close" size={30} color="white" />
             </Pressable>
           </View>
           <ScrollView>

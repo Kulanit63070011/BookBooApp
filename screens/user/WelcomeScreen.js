@@ -16,7 +16,7 @@ export default function WelcomeScreen() {
           <Text style={WelcomeStyle.title}>Boo</Text>
         </View>
         <View style={WelcomeStyle.imageContainer}>
-          <Image source={require("../../assets/logo_two.png")} style={WelcomeStyle.image} />
+          <Image source={require("../../assets/logo_bookboo.png")} style={WelcomeStyle.image} />
         </View>
         <View style={WelcomeStyle.buttonContainer}>
           <Pressable

@@ -10,6 +10,7 @@ import { db, auth } from '../../backend/firebase';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { updateDoc, arrayRemove, doc } from 'firebase/firestore';
 import SearchBar from '../../components/common/searchBar';
+import CommunityNavigationButtons from '../../components/Community/CommunityNavigationButtons';
 
 const MyCommunityScreen = () => {
   const navigation = useNavigation();
@@ -81,6 +82,7 @@ const MyCommunityScreen = () => {
         </View>
       </SafeAreaView>
       <View style={[allCommunityStyles.contentContainer]}>
+        <CommunityNavigationButtons />
         <SearchBar
           value={newCommunity.name}
           onChange={(text) => setNewCommunity({ ...newCommunity, name: text })}

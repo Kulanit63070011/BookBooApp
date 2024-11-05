@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, Pressable, TextInput, StyleSheet, ScrollView, Image } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { db, auth } from '../../backend/firebase';
 import { useNavigation } from '@react-navigation/native';
@@ -63,7 +63,7 @@ const CommunityDetailsModal = ({ visible, communityDetails, onClose, onDelete, o
           <ScrollView>
             <View style={styles.topBar}>
               <Pressable onPress={onClose} style={styles.closeButton}>
-                <Icon name="close" size={30} color="white" />
+                <MaterialIcons name="close" size={30} color="white" />
               </Pressable>
             </View>
             {/* Display community details */}

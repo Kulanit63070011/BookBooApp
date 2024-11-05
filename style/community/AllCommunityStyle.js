@@ -64,5 +64,6 @@ export const allCommunityStyles = StyleSheet.create({
     backgroundColor: 'white',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
+    paddingBottom:50,
   },
 });

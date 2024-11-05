@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, View, Text, Pressable, StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const CalendarDetailsModal = ({ isVisible, onClose, event }) => {
   return (
@@ -14,7 +14,7 @@ const CalendarDetailsModal = ({ isVisible, onClose, event }) => {
         <View style={styles.modalContent}>
           <View style={styles.topBar}>
             <Pressable onPress={onClose} style={styles.closeButton}>
-              <Icon name="close" size={30} color="white" />
+              <MaterialIcons name="close" size={30} color="white" />
             </Pressable>
           </View>
           <View style={styles.detailsContainer}>

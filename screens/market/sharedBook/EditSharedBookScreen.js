@@ -111,7 +111,7 @@ const EditSharedBookScreen = ({ route, navigation }) => {
       <Pressable style={styles.saveButton} onPress={saveChanges}>
         <Text style={styles.buttonText}>Save Changes</Text>
       </Pressable>
-      <Pressable style={styles.deleteButton} onPress={confirmDelete}>
+      <Pressable style={styles.deleteButton} onPress={deleteBook}>
         <Text style={styles.buttonText}>Delete Book</Text>
       </Pressable>
     </View>

@@ -38,7 +38,7 @@ export const createCommunityStyles = StyleSheet.create({
     fontSize: 18,
   },
   bookImageContainer: {
-    position: 'relative', // ต้องเป็น 'relative' เพื่อให้ปุ่มใช้ position: 'absolute' ในลูกศรอ้างอิงตำแหน่งมัน
+    position: 'relative',
   },
   bookImage: {
     width: 170, 
@@ -50,7 +50,7 @@ export const createCommunityStyles = StyleSheet.create({
     bottom: 0,
     right: 0,
     backgroundColor: '#C3C3C3',
-    padding: 5, // เพิ่มการเพิ่มขนาดของปุ่มเพื่อให้เห็นรูปร่างกลม
+    padding: 5, 
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -60,7 +60,7 @@ export const createCommunityStyles = StyleSheet.create({
   },
   addButtonIcon: {
     color: 'white',
-    fontSize: 20, // เพิ่มขนาดของ icon เพื่อให้เห็นรูปร่างกลม
+    fontSize: 20, 
     fontWeight:'bold',
   },  
 });

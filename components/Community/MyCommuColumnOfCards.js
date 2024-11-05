@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, Image } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const MyCommuColumnOfCards = ({ cards, onPress, onLeave, cardWidth, isOwner }) => {
   return (
@@ -19,7 +19,7 @@ const MyCommuColumnOfCards = ({ cards, onPress, onLeave, cardWidth, isOwner }) =
             </View>
             {isOwner(community) && (
               <Pressable onPress={() => alert('Edit pressed for ' + community.name)} style={styles.leaveButton}>
-                <Icon name="edit" size={16} color="blue" />
+                <MaterialIcons name="edit" size={16} color="blue" />
               </Pressable>
             )}
             {!isOwner(community) && (

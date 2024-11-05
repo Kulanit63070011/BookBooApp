@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, ScrollView, SafeAreaView, StyleSheet } from 'react-native';
 import PromotionColumnOfCards from '../../../components/Market/Promotion/PromotionColumnOfCards';
 import PromotionDetailsModal from '../../../components/Market/Promotion/PromotionDetailsModal';
 import BottomNavigator from '../../../navigation/BottomNavigator';
@@ -8,9 +8,13 @@ import FloatingButton from '../../../components/common/FloatingAddButton';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db, auth, } from '../../../backend/firebase';
 import { getDocs } from 'firebase/firestore';
+import { Button } from 'react-native-elements';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
+import MarketNavigationButtons from '../../../components/Market/MarketNavigationButtons';
 // import { analytics } from '../../../backend/firebase';
 
 const PromotionScreen = () => {
+  const navigation = useNavigation();
   const [promotions, setPromotions] = useState([]);
   const [selectedPromotion, setSelectedPromotion] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -61,7 +65,7 @@ const PromotionScreen = () => {
   const openPromotionDetails = (promotion) => {
     setSelectedPromotion(promotion);
     setIsModalVisible(true);
-    
+
     // Log event when user opens promotion details
     // analytics().logEvent('promotion_view', {
     //   promotion_id: promotion.id,
@@ -81,6 +85,7 @@ const PromotionScreen = () => {
         </View>
       </SafeAreaView>
       <View style={signUpStyles.contentContainer}>
+        <MarketNavigationButtons/>
         <ScrollView>
           <PromotionColumnOfCards promotions={promotions} onPress={openPromotionDetails} />
         </ScrollView>
@@ -97,3 +102,13 @@ const PromotionScreen = () => {
 };
 
 export default PromotionScreen;
+const styles = StyleSheet.create({
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between', // แบ่งช่องว่างระหว่างปุ่ม
+    marginBottom: 10, // เพื่อให้มีระยะห่างระหว่างปุ่มและ PromotionColumnOfCards
+  },
+  button: {
+    width: '22%', // กำหนดความกว้างของปุ่มเพื่อให้มี 4 ปุ่มในแถวเดียว
+  },
+});

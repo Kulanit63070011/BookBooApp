@@ -25,6 +25,9 @@ import CreateSharedBookScreen from '../screens/market/sharedBook/CreateSharedBoo
 import EditSharedBookScreen from '../screens/market/sharedBook/EditSharedBookScreen';
 import PromotionScreen from '../screens/market/promotion/PromotionScreen';
 import CreatePromotionScreen from '../screens/market/promotion/CreatePromotionScreen';
+import CreatePorterBookScreen from '../screens/market/porterBook/CreatePorterBookScreen';
+import AllPorterBookScreen from '../screens/market/porterBook/AllPorterBookScreen';
+import EditPorterBookScreen from '../screens/market/porterBook/EditPorterBookScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -158,14 +161,29 @@ const AppNavigation = () => {
           component={EditSharedBookScreen}
         />
         <Stack.Screen
+          name="CreatePromotion"
+          options={{ headerShown: true }}
+          component={CreatePromotionScreen}
+        />
+        <Stack.Screen
           name="Promotion"
           options={{ headerShown: true }}
           component={PromotionScreen}
         />
         <Stack.Screen
-          name="CreatePromotion"
+          name="CreatePorterBook"
           options={{ headerShown: true }}
-          component={CreatePromotionScreen}
+          component={CreatePorterBookScreen}
+        />
+        <Stack.Screen
+          name="AllPorterBook"
+          options={{ headerShown: true }}
+          component={AllPorterBookScreen}
+        />
+        <Stack.Screen
+          name="EditPorterBook"
+          options={{ headerShown: true }}
+          component={EditPorterBookScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>

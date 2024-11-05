@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 import { addDoc, collection, onSnapshot, query, orderBy, doc, updateDoc, getDocs, getDoc } from 'firebase/firestore';
 import { auth, db } from '../../backend/firebase';
 import CreatePostCommunityModal from '../../components/Community/CreatePostCommunityModal';
@@ -202,20 +202,20 @@ const CommunityScreen = ({ route }) => {
 
     return (
         <View style={communityStyles.container}>
-            <TouchableOpacity style={communityStyles.inputContainer} onPress={() => setCreatePostModalVisible(true)}>
+            <Pressable style={communityStyles.inputContainer} onPress={() => setCreatePostModalVisible(true)}>
                 <Text style={communityStyles.postInput} numberOfLines={1} ellipsizeMode="tail">
                     What's on your mind?
                 </Text>
-                <TouchableOpacity onPress={() => setCreatePostModalVisible(true)}>
+                <Pressable onPress={() => setCreatePostModalVisible(true)}>
                     <Text>Create Post</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={communityStyles.createCalendarButton} onPress={() => handleCreateCalendar()}>
+                </Pressable>
+                <Pressable style={communityStyles.createCalendarButton} onPress={() => handleCreateCalendar()}>
                     <Text style={communityStyles.createCalendarButtonText}>Create Calendar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={communityStyles.createCalendarButton} onPress={() => handleShowCalendar()}>
+                </Pressable>
+                <Pressable style={communityStyles.createCalendarButton} onPress={() => handleShowCalendar()}>
                     <Text style={communityStyles.createCalendarButtonText}>View Calendar</Text>
-                </TouchableOpacity>
-            </TouchableOpacity>
+                </Pressable>
+            </Pressable>
 
             <ScrollView>
                 {posts.map((post) => (
@@ -245,20 +245,20 @@ const CommunityScreen = ({ route }) => {
                                         setEditPostModalVisible(true);
                                     }}
                                     style={communityStyles.editButton}>
-                                    <Icon name="edit" size={20} color="red" />
+                                    <MaterialIcons name="edit" size={20} color="red" />
                                 </Pressable>
                             )}
                         </View>
                         <Text>{post.content}</Text>
                         <View style={communityStyles.likeDislikeContainer}>
-                            <TouchableOpacity onPress={() => handleLikePost(post.id, true)} style={communityStyles.likeButton}>
-                                <Icon name="thumb-up" size={20} color="green" />
+                            <Pressable onPress={() => handleLikePost(post.id, true)} style={communityStyles.likeButton}>
+                                <MaterialIcons name="thumb-up" size={20} color="green" />
                                 <Text style={communityStyles.likeDislikeText}>{post.likes} Likes</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => handleLikePost(post.id, false)} style={communityStyles.dislikeButton}>
-                                <Icon name="thumb-down" size={20} color="red" />
+                            </Pressable>
+                            <Pressable onPress={() => handleLikePost(post.id, false)} style={communityStyles.dislikeButton}>
+                                <MaterialIcons name="thumb-down" size={20} color="red" />
                                 <Text style={communityStyles.likeDislikeText}>{post.dislikes} Dislikes</Text>
-                            </TouchableOpacity>
+                            </Pressable>
                         </View>
                     </Pressable>
                 ))}

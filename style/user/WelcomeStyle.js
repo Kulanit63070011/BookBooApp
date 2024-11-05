@@ -22,8 +22,8 @@ export const WelcomeStyle = StyleSheet.create({
     justifyContent: 'center',
   },
   image: {
-    width: 380,
-    height: 380,
+    width: 400,
+    height: 400,
   },
   buttonContainer: {
     marginTop: 20,
@@ -34,7 +34,7 @@ export const WelcomeStyle = StyleSheet.create({
     width: '100%',
     paddingVertical: 15,
     paddingHorizontal: 20,
-    backgroundColor: '#ed4a12',
+    backgroundColor: 'red',
     borderRadius: 20,
     alignSelf: 'center', // Align the button to the center horizontally
   },
