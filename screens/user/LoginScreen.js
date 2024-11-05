@@ -26,10 +26,10 @@ export default function LoginScreen() {
       // await analytics.logEvent('login', {
       //   method: 'email',
       // });  
-      const analytics = getAnalytics();
-      logEvent(analytics, 'loginKK', {
-        method: 'email',
-      });
+      // const analytics = getAnalytics();
+      // logEvent(analytics, 'loginKK', {
+      //   method: 'email',
+      // });
       console.log('JJII')
 
       // แสดง Alert เมื่อเข้าสู่ระบบสำเร็จและเชื่อมต่อกับ Firebase Analytics ได้

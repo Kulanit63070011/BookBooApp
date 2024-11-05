@@ -5,6 +5,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../backend/firebase';
 import { createCommunityStyles } from '../../style/community/CreateCommunityStyle';
 import { Picker } from '@react-native-picker/picker';
+import * as ImagePicker from 'expo-image-picker';
 
 const CreateCommunityScreen = () => {
   const navigation = useNavigation();
@@ -12,8 +13,6 @@ const CreateCommunityScreen = () => {
   const [name, setName] = useState('');
   const [imageCommu, setImageCommu] = useState('');
   const [description, setDescription] = useState('');
-  const [createdBy, setCreatedBy] = useState('');
-  const [createdDate, setCreatedDate] = useState('');
 
   const filtersData = [
     { category: 'General novels' },
@@ -24,14 +23,6 @@ const CreateCommunityScreen = () => {
     { category: 'Detective novels' },
     { category: 'Horror novels' },
     { category: 'Serial novels' },
-    { category: 'General novels' },
-    { category: 'Fantasy novels' },
-    { category: 'Sci-fi novels' },
-    { category: 'Adventure novels' },
-    { category: 'Detective novels' },
-    { category: 'Horror novels' },
-    { category: 'Serial novels' },
-
     { category: 'General cartoons' },
     { category: 'Romantic cartoons' },
     { category: 'Fantasy cartoons' },
@@ -40,14 +31,6 @@ const CreateCommunityScreen = () => {
     { category: 'Detective cartoons' },
     { category: 'Horror cartoons' },
     { category: 'Serial cartoons' },
-    { category: 'General cartoons' },
-    { category: 'Fantasy cartoons' },
-    { category: 'Sci-fi cartoons' },
-    { category: 'Adventure cartoons' },
-    { category: 'Detective cartoons' },
-    { category: 'Horror cartoons' },
-    { category: 'Serial cartoons' },
-
     { category: 'Finance and Investment' },
     { category: 'Market Accounting' },
     { category: 'Psychology' },
@@ -78,13 +61,8 @@ const CreateCommunityScreen = () => {
         return;
       }
 
-      // Use the user's UID as the creator of the community
       const createdByUser = user.uid;
-
-      // Use the current timestamp as the creation date
       const creationTimestamp = new Date();
-
-      // Use the user's UID as a member of the community
       const membersArray = [createdByUser];
 
       const communityData = {
@@ -109,11 +87,35 @@ const CreateCommunityScreen = () => {
     }
   };
 
+  const pickImage = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (permissionResult.granted === false) {
+      alert('Permission to access camera roll is required!');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setImageCommu(result.assets[0].uri);
+    }
+  };
+
   return (
     <View style={createCommunityStyles.container}>
       <View style={createCommunityStyles.bookImageContainer}>
-        <Image source={require('../../assets/images/commuImg.png')} resizeMode="contain" style={createCommunityStyles.bookImage} />
-        <Pressable style={createCommunityStyles.addButton}>
+        <Image
+          source={imageCommu ? { uri: imageCommu } : require('../../assets/images/commuImg.png')}
+          resizeMode="contain"
+          style={createCommunityStyles.bookImage}
+        />
+        <Pressable style={createCommunityStyles.addButton} onPress={pickImage}>
           <Text style={createCommunityStyles.addButtonIcon}>+</Text>
         </Pressable>
       </View>
@@ -147,12 +149,6 @@ const CreateCommunityScreen = () => {
           style={createCommunityStyles.input}
           value={name}
           onChangeText={(text) => setName(text)}
-        />
-        <Text style={createCommunityStyles.label}>Image:</Text>
-        <TextInput
-          style={createCommunityStyles.input}
-          value={imageCommu}
-          onChangeText={(text) => setImageCommu(text)}
         />
         <Text style={createCommunityStyles.label}>Detail:</Text>
         <TextInput

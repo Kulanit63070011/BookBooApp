@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, Image, TextInput, ScrollView } from 'react-native';
+import { View, Text, Pressable, Image, TextInput, ScrollView, Alert, CheckBox } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { signUpStyles } from '../../style/user/SignUpStyle';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { db, auth } from '../../backend/firebase';
 import { setDoc, doc } from 'firebase/firestore';
-import * as ImagePicker from 'expo-image-picker';
 
-export default function SignUpScreen() {
+export default function PorterSignUpScreen() {
   const navigation = useNavigation();
   const [displayName, setDisplayName] = useState('');
   const [username, setUsername] = useState('');
@@ -16,49 +15,34 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [aboutMe, setAboutMe] = useState('');
-  const [imageUri, setImageUri] = useState(null); // สถานะสำหรับ URI ของภาพ
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const handleSignUp = async () => {
+    if (!termsAccepted) {
+      Alert.alert("Please accept the terms and conditions.");
+      return;
+    }
+
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const userId = userCredential.user.uid;
       const userDocRef = doc(db, 'users', userId);
-      
-      const generateUniqueBookshelfId = () => {
-        return `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      }
-      const bookshelfId = generateUniqueBookshelfId();
+      const bookshelfId = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
       await setDoc(userDocRef, {
         displayName,
         username,
         email,
         aboutMe,
         bookshelfId,
+        role: 'porter', // ตั้งค่า role เป็น 'porter'
       });
-      alert('Sign up successful');
+
+      Alert.alert('Sign up successful');
       navigation.navigate('Login');
     } catch (error) {
       console.error('Sign up failed', error.message);
-    }
-  }
-
-  const selectImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
-    if (permissionResult.granted === false) {
-      alert("Permission to access camera roll is required!");
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.cancelled) {
-      setImageUri(result.uri);
+      Alert.alert('Sign up failed', error.message);
     }
   };
 
@@ -66,14 +50,13 @@ export default function SignUpScreen() {
     <View style={signUpStyles.container}>
       <SafeAreaView>
         <View style={signUpStyles.titleContainer}>
-          <Text style={signUpStyles.title}>Register</Text>
+          <Text style={signUpStyles.title}>Porter Registration</Text>
         </View>
       </SafeAreaView>
       <ScrollView style={signUpStyles.contentContainer}>
-        <Pressable onPress={selectImage}>
-          <Text style={signUpStyles.inputLabel}>Select Profile Image</Text>
+        <Pressable>
+          <Image source={require('../../assets/images/human.png')} style={signUpStyles.profileImage} />
         </Pressable>
-        {imageUri && <Image source={{ uri: imageUri }} style={signUpStyles.profileImage} />}
         <View style={signUpStyles.inputContainer}>
           <View style={{ marginBottom: 20 }}>
             <Text style={signUpStyles.inputLabel}>Display Name</Text>
@@ -132,15 +115,9 @@ export default function SignUpScreen() {
               onChangeText={(text) => setAboutMe(text)}
             />
           </View>
-          <View style={[signUpStyles.socialButtonContainer, { marginBottom: 20 }]}>
-            <Pressable style={signUpStyles.socialButton} onPress={() => navigation.navigate('PorterSignUp')}>
-              <Image source={require('../../assets/icons/google.png')} style={signUpStyles.socialButtonImage} />
-            </Pressable>
-            <View style={{ flexDirection: 'row', justifyContent: 'center', spaceX: 12 }}>
-              <Pressable style={{ padding: 8, backgroundColor: '#f0f0f0', borderRadius: 20 }}>
-                <Image source={require('../../assets/icons/apple.png')} style={{ width: 40, height: 40 }} />
-              </Pressable>
-            </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+            <CheckBox value={termsAccepted} onValueChange={setTermsAccepted} />
+            <Text style={{ marginLeft: 10 }}>I accept the terms and conditions</Text>
           </View>
           <View style={{ paddingBottom: 30 }}>
             <Pressable style={signUpStyles.signUpButton} onPress={handleSignUp}>

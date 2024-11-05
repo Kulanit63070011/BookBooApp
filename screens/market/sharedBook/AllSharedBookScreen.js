@@ -6,45 +6,44 @@ import { signUpStyles } from '../../../style/user/SignUpStyle';
 import SearchBar from '../../../components/common/searchBar';
 import SharedBookColumnOfCards from '../../../components/Market/SharedBook/SharedBookColumnOfCards';
 import SharedBookDetailsModal from '../../../components/Market/SharedBook/SharedBookDetailsModal';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../../../backend/firebase';
-import { onSnapshot } from 'firebase/firestore';
-import { auth } from '../../../backend/firebase';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db, auth } from '../../../backend/firebase';
 import { MaterialIcons } from '@expo/vector-icons';
 import MarketNavigationButtons from '../../../components/Market/MarketNavigationButtons';
+import { fetchUserInterests } from '../../../backend/fetchData';
+import { recommendBooks } from '../../../models/recommendationModel';
 
 const AllSharedBookScreen = ({ navigation }) => {
   const [books, setBooks] = useState([]);
+  const [recommendedBooks, setRecommendedBooks] = useState([]);
+  const [userInterests, setUserInterests] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+  // การดึงข้อมูลความสนใจของผู้ใช้
+  useEffect(() => {
+    fetchUserInterests(setUserInterests);
+  }, []);
+
+  // ดึงข้อมูลหนังสือที่แชร์ทั้งหมดและเรียงลำดับตามการแนะนำ
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, 'sharedBooks'), (snapshot) => {
-      const fetchedBooks = [];
-      snapshot.forEach((doc) => {
-        fetchedBooks.push({ id: doc.id, ...doc.data() });
-      });
-      setBooks(fetchedBooks);
-    });
+      const fetchedBooks = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setBooks(fetchedBooks); // เก็บข้อมูลหนังสือทั้งหมด
 
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, 'sharedBooks'));
-        const fetchedBooks = [];
-        querySnapshot.forEach((doc) => {
-          fetchedBooks.push({ id: doc.id, ...doc.data() });
+      // หากมีข้อมูลความสนใจของผู้ใช้ ให้ใช้ recommendBooks ในการจัดเรียงหนังสือตามความสนใจ
+      if (userInterests.length > 0) {
+        recommendBooks(fetchedBooks, userInterests).then((sortedBooks) => {
+          setRecommendedBooks(sortedBooks);
         });
-        setBooks(fetchedBooks);
-      } catch (error) {
-        console.error('Error fetching books:', error.message);
+      } else {
+        // เมื่อไม่มีความสนใจ แสดงหนังสือสุ่ม 5 เล่ม
+        const randomBooks = fetchedBooks.sort(() => 0.5 - Math.random()).slice(0, 5);
+        setRecommendedBooks(randomBooks);
       }
-    };
-    fetchBooks();
-  }, []);
+    });
+    return unsubscribe;
+  }, [userInterests]);
 
   const openBookDetails = (book) => {
     setSelectedBook(book);
@@ -56,7 +55,7 @@ const AllSharedBookScreen = ({ navigation }) => {
   };
 
   const renderEditIcon = (book) => {
-    if (auth.currentUser && book.ownerSharedBook === auth.currentUser.uid) {
+    if (auth.currentUser?.uid === book.ownerSharedBook) {
       return (
         <Pressable onPress={() => handleEditBook(book)} style={{ userSelect: 'auto' }}>
           <MaterialIcons name="edit" size={24} color="black" />
@@ -65,7 +64,7 @@ const AllSharedBookScreen = ({ navigation }) => {
     }
     return null;
   };
-  
+
   const handleEditBook = (book) => {
     navigation.navigate('EditSharedBook', { bookDetails: book });
   };
@@ -82,8 +81,9 @@ const AllSharedBookScreen = ({ navigation }) => {
         <SearchBar />
         <ScrollView>
           <View style={{ marginVertical: 20 }}>
-            {books.length > 0 ? (
-              <SharedBookColumnOfCards cards={books} onPress={openBookDetails} renderEditIcon={renderEditIcon} />) : (
+            {recommendedBooks.length > 0 ? (
+              <SharedBookColumnOfCards cards={recommendedBooks} onPress={openBookDetails} renderEditIcon={renderEditIcon} />
+            ) : (
               <Text>No shared books available</Text>
             )}
           </View>

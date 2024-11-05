@@ -1,181 +1,186 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ScrollView, SafeAreaView, Pressable } from 'react-native';
-import BottomNavigator from '../../../navigation/BottomNavigator';
-import FloatingButton from '../../../components/common/FloatingAddButton';
-import { signUpStyles } from '../../../style/user/SignUpStyle';
-import SearchBar from '../../../components/common/searchBar';
-import PorterBookDetailModal from '../../../components/Market/PorterBook/PorterBookDetailModal';
-import { collection, getDocs } from 'firebase/firestore';
-import { db, auth } from '../../../backend/firebase'; // นำเข้า Firebase Firestore instance ที่ชื่อ db
-import { MaterialIcons } from '@expo/vector-icons';
-import { useNavigation, useFocusEffect } from '@react-navigation/native'; // เพิ่มการนำเข้า useFocusEffect
-import MarketNavigationButtons from '../../../components/Market/MarketNavigationButtons';
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, SafeAreaView, Pressable } from "react-native";
+import BottomNavigator from "../../../navigation/BottomNavigator";
+import FloatingButton from "../../../components/common/FloatingAddButton";
+import { signUpStyles } from "../../../style/user/SignUpStyle";
+import SearchBar from "../../../components/common/searchBar";
+import PorterBookDetailModal from "../../../components/Market/PorterBook/PorterBookDetailModal";
+import { collection, getDocs, getDoc, doc } from "firebase/firestore";
+import { db, auth } from "../../../backend/firebase";
+import { MaterialIcons } from "@expo/vector-icons";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import MarketNavigationButtons from "../../../components/Market/MarketNavigationButtons";
 
 const AllPorterBookScreen = () => {
-    const [modalVisible, setModalVisible] = useState(false);
-    const [selectedPost, setSelectedPost] = useState(null);
-    const [porterBooks, setPorterBooks] = useState([]);
-    const navigation = useNavigation();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [porterBooks, setPorterBooks] = useState([]);
+  const [isPorter, setIsPorter] = useState(false);
+  const navigation = useNavigation();
 
-    const fetchPorterBooks = async () => {
-        const porterBooksCollection = collection(db, 'porterBooks');
-        const snapshot = await getDocs(porterBooksCollection);
-        const porterBooksData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setPorterBooks(porterBooksData);
-    };
+  const fetchPorterBooks = async () => {
+    const eventsCollection = collection(db, "events");
+    const snapshot = await getDocs(eventsCollection);
+    const eventsData = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setPorterBooks(eventsData);
+  };
 
-    useEffect(() => {
-        fetchPorterBooks();
-    }, []);
+  useEffect(() => {
+    fetchPorterBooks();
+    checkUserRole();
+  }, []);
 
-    useFocusEffect(
-        React.useCallback(() => {
-            fetchPorterBooks();
-        }, [])
-    );
+  const checkUserRole = async () => {
+    if (auth.currentUser) {
+      const userId = auth.currentUser.uid;
+      const userDocRef = doc(db, "users", userId);
+      const userDoc = await getDoc(userDocRef);
+      if (userDoc.exists()) {
+        setIsPorter(userDoc.data().role === "porter");
+      }
+    }
+  };
 
-    const handlePostPress = (post) => {
-        setSelectedPost(post);
-        setModalVisible(true);
-    };
+  useFocusEffect(
+    React.useCallback(() => {
+      checkUserRole();
+      fetchPorterBooks();
+    }, [])
+  );
 
-    const handleEditPost = (post) => {
-        navigation.navigate('EditPorterBook', { post });
-    };
+  const handlePostPress = (post) => {
+    setSelectedPost(post);
+    setModalVisible(true);
+  };
 
-    const renderEditIcon = (post) => {
-        if (auth.currentUser && post.createdBy === auth.currentUser.uid) {
-            return (
-                <Pressable onPress={() => handleEditPost(post)} style={{ userSelect: 'auto' }}>
-                    <MaterialIcons name="edit" size={24} color="black" />
-                </Pressable>
-            );
-        }
-        return null;
-    };
+  const handleEditPost = (post) => {
+    navigation.navigate("EditPorterBook", { post });
+  };
 
-    const renderPostItem = ({ item: post }) => (
-        <View>
-            <ScrollView>
-                <TouchableOpacity style={styles.postCard} onPress={() => handlePostPress(post)}>
-                <View style={styles.postTitleContainer}>
-                    <Text style={styles.postTitle}>{post.title}</Text>
-                    {renderEditIcon && (
-                        <View style={styles.editIconContainer}>
-                            {renderEditIcon(post)}
-                        </View>
-                    )}
-                </View>
-                    <Text style={styles.date}>
-                        Start Date: {post.startDate} | End Date: {post.endDate}
-                    </Text>
-                    <Text style={styles.about}>{post.about}</Text>
-                    {/* <Text style={styles.itemTitle}>Items:</Text>
-                        {post.items.map((item, index) => (
-                            <View key={index} style={styles.itemContainer}>
-                                <Text style={styles.itemName}>{item.name}</Text>
-                                <Text style={styles.itemPrice}>{item.price}</Text>
-                            </View>
-                        ))} */}
-                    <View style={styles.imageGrid}>
-                        <Image source={require('../../../assets/images/bookcover.png')} style={styles.bookImage} />
-                        <Image source={require('../../../assets/images/bookcover.png')} style={styles.bookImage} />
-                        <Image source={require('../../../assets/images/bookcover.png')} style={styles.bookImage} />
-                        <Image source={require('../../../assets/images/bookcover.png')} style={styles.bookImage} />
-                    </View>
-                </TouchableOpacity>
-            </ScrollView>
+  const renderEditIcon = (post) => {
+    if (auth.currentUser && post.createdBy === auth.currentUser.uid) {
+      return (
+        <Pressable onPress={() => handleEditPost(post)}>
+          <MaterialIcons name="edit" size={24} color="black" />
+        </Pressable>
+      );
+    }
+    return null;
+  };
+
+  const renderPostItem = ({ item: post }) => (
+    <TouchableOpacity
+      style={styles.postCard}
+      onPress={() => handlePostPress(post)}
+    >
+      <View style={styles.postTitleContainer}>
+        <Text style={styles.postTitle}>{post.title}</Text>
+        {renderEditIcon(post)}
+      </View>
+      <Text style={styles.date}>
+        Start Date: {new Date(post.startDate).toLocaleDateString()} | End Date: {new Date(post.endDate).toLocaleDateString()}
+      </Text>
+      <Text style={styles.about}>{post.about}</Text>
+      <View style={styles.imageGrid}>
+        <Image
+          source={require("../../../assets/images/bookcover.png")}
+          style={styles.bookImage}
+        />
+      </View>
+    </TouchableOpacity>
+  );
+
+  return (
+    <View style={signUpStyles.container}>
+      <SafeAreaView>
+        <View style={signUpStyles.titleContainer}>
+          <Text style={signUpStyles.title}>Porter Books</Text>
         </View>
-    );
-
-    return (
-        <View style={signUpStyles.container}>
-            <SafeAreaView>
-                <View style={signUpStyles.titleContainer}>
-                    <Text style={signUpStyles.title}>Porter Books</Text>
-                </View>
-            </SafeAreaView>
-            <View style={signUpStyles.contentContainer}>
-                <MarketNavigationButtons/>
-                <SearchBar />
-                <FlatList
-                    data={porterBooks}
-                    renderItem={renderPostItem}
-                    keyExtractor={(post) => post.id}
-                    contentContainerStyle={styles.listContainer}
-                />
-                <PorterBookDetailModal visible={modalVisible} postData={selectedPost} onClose={() => setModalVisible(false)} />
-                <FloatingButton targetScreen="CreatePorterBook" />
-                <BottomNavigator />
-            </View>
-        </View>
-    );
+      </SafeAreaView>
+      <View style={signUpStyles.contentContainer}>
+        <MarketNavigationButtons />
+        <SearchBar />
+        <FlatList
+          data={porterBooks}
+          renderItem={renderPostItem}
+          keyExtractor={(post) => post.id}
+          contentContainerStyle={styles.listContainer}
+        />
+        <PorterBookDetailModal
+          visible={modalVisible}
+          postData={selectedPost}
+          onClose={() => setModalVisible(false)}
+          userRole={isPorter ? 'porter' : 'user'}
+        />
+        {isPorter && (
+          <View style={{ position: "absolute", bottom: 20, right: 20 }}>
+            <FloatingButton targetScreen="CreateEventPost" />
+          </View>
+        )}
+        <BottomNavigator />
+      </View>
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#C0C0C0"
+  container: {
+    flex: 1,
+    backgroundColor: "#C0C0C0",
+  },
+  listContainer: {
+    paddingBottom: 20,
+    paddingHorizontal: 15,
+  },
+  postCard: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 20,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: "#dcdcdc",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
     },
-    listContainer: {
-        paddingBottom: 20,
-    },
-    postCard: {
-        backgroundColor: '#fff',
-        borderRadius: 10,
-        padding: 15,
-        marginBottom: 10,
-        elevation: 2,
-    },
-    postTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 5,
-    },
-    date: {
-        marginBottom: 10,
-    },
-    about: {
-        marginBottom: 10,
-    },
-    itemTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginBottom: 5,
-    },
-    itemContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 5,
-    },
-    itemName: {
-        flex: 1,
-        marginRight: 10,
-    },
-    itemPrice: {
-        flex: 1,
-        textAlign: 'right',
-    },
-    bookImage: {
-        width: 150,
-        height: 150,
-        marginBottom: 5,
-    },
-    imageGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-    },
-    editIconContainer: {
-        justifyContent: 'center',
-        alignItems: "flex-end",
-        paddingRight: 10,
-    },
-    postTitleContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+  },
+  postTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  date: {
+    marginBottom: 10,
+    fontStyle: 'italic',
+  },
+  about: {
+    marginBottom: 10,
+  },
+  bookImage: {
+    width: 150,
+    height: 150,
+    borderRadius: 10,
+    marginBottom: 5,
+  },
+  imageGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+  postTitleContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
 });
 
 export default AllPorterBookScreen;

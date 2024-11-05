@@ -12,10 +12,10 @@ const MarketNavigationButtons = () => {
 
   return (
     <View style={styles.buttonContainer}>
-      <Button containerStyle={styles.button} title="Promotion" onPress={() => navigateTo('Promotion')} titleStyle={styles.buttonTitle}/>
+      <Button containerStyle={styles.button} title="Fyp" onPress={() => navigateTo('Promotion')} titleStyle={styles.buttonTitle}/>
       <Button containerStyle={styles.button} title="PorterBook" onPress={() => navigateTo('AllPorterBook')} titleStyle={styles.buttonTitle}/>
       <Button containerStyle={styles.button} title="SharedBook" onPress={() => navigateTo('AllSharedBook')} titleStyle={styles.buttonTitle}/>
-      <Button containerStyle={styles.button} title="fyp" titleStyle={styles.buttonTitle}/>
+      {/* <Button containerStyle={styles.button} title="fyp" titleStyle={styles.buttonTitle}/> */}
     </View>
   );
 };
@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   button: {
-    width: '22%',
+    width: '30%',
   },
   buttonTitle: {
     fontSize: 14, // กำหนดขนาดตัวอักษร

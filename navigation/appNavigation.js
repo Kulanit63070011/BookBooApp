@@ -1,33 +1,35 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import WelcomeScreen from '../screens/user/WelcomeScreen';
-import SignUpScreen from '../screens/user/SignUpScreen';
-import CustomHeader from './CustomHeader';
-import MyBookShelfScreen from '../screens/bookshelf/MyBookShelfScreen';
-import CreateMyBookScreen from '../screens/bookshelf/CreateMyBookScreen';
-import LoginScreen from '../screens/user/LoginScreen';
-import CreateCommunityScreen from '../screens/community/CreateCommunityScreen';
-import EditCommunityScreen from '../screens/community/EditCommunityScreen';
-import AllCommunityScreen from '../screens/community/AllCommunityScreen';
-import MyCommunityScreen from '../screens/community/MyCommunityScreen';
-import CreateCalendarScreen from '../screens/community/calendar/CreateCalendarScreen';
-import EditCalendarScreen from '../screens/community/calendar/EditCalendarScreen';
-import EditProfileScreen from '../screens/user/EditProfileScreen';
-import ChatScreen from '../screens/chat/ChatScreen';
-import AllChatScreen from '../screens/chat/AllChatScreen';
-import MyProfileScreen from '../screens/user/MyProfileScreen';
-import MyNotificationScreen from '../screens/user/MyNotificationScreen';
-import CalendarCommunityScreen from '../screens/community/calendar/CalendarCommunityScreen';
-import CommunityScreen from '../screens/community/CommunityScreen';
-import AllSharedBookScreen from '../screens/market/sharedBook/AllSharedBookScreen';
-import CreateSharedBookScreen from '../screens/market/sharedBook/CreateSharedBookScreen';
-import EditSharedBookScreen from '../screens/market/sharedBook/EditSharedBookScreen';
-import PromotionScreen from '../screens/market/promotion/PromotionScreen';
-import CreatePromotionScreen from '../screens/market/promotion/CreatePromotionScreen';
-import CreatePorterBookScreen from '../screens/market/porterBook/CreatePorterBookScreen';
-import AllPorterBookScreen from '../screens/market/porterBook/AllPorterBookScreen';
-import EditPorterBookScreen from '../screens/market/porterBook/EditPorterBookScreen';
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import WelcomeScreen from "../screens/user/WelcomeScreen";
+import SignUpScreen from "../screens/user/SignUpScreen";
+import PorterSignUpScreen from "../screens/user/PorterSignUpScreen";
+import CustomHeader from "./CustomHeader";
+import MyBookShelfScreen from "../screens/bookshelf/MyBookShelfScreen";
+import CreateMyBookScreen from "../screens/bookshelf/CreateMyBookScreen";
+import LoginScreen from "../screens/user/LoginScreen";
+import CreateCommunityScreen from "../screens/community/CreateCommunityScreen";
+import EditCommunityScreen from "../screens/community/EditCommunityScreen";
+import AllCommunityScreen from "../screens/community/AllCommunityScreen";
+import MyCommunityScreen from "../screens/community/MyCommunityScreen";
+import CreateCalendarScreen from "../screens/community/calendar/CreateCalendarScreen";
+import EditCalendarScreen from "../screens/community/calendar/EditCalendarScreen";
+import EditProfileScreen from "../screens/user/EditProfileScreen";
+import ChatScreen from "../screens/chat/ChatScreen";
+import AllChatScreen from "../screens/chat/AllChatScreen";
+import MyProfileScreen from "../screens/user/MyProfileScreen";
+import MyNotificationScreen from "../screens/user/MyNotificationScreen";
+import CalendarCommunityScreen from "../screens/community/calendar/CalendarCommunityScreen";
+import CommunityScreen from "../screens/community/CommunityScreen";
+import AllSharedBookScreen from "../screens/market/sharedBook/AllSharedBookScreen";
+import CreateSharedBookScreen from "../screens/market/sharedBook/CreateSharedBookScreen";
+import EditSharedBookScreen from "../screens/market/sharedBook/EditSharedBookScreen";
+import PromotionScreen from "../screens/market/promotion/PromotionScreen";
+import CreatePromotionScreen from "../screens/market/promotion/CreatePromotionScreen";
+import CreateEventPostScreen from "../screens/market/porterBook/CreateEventPostScreen";
+import AllPorterBookScreen from "../screens/market/porterBook/AllPorterBookScreen";
+import CommunityRecommendationScreen from "../screens/community/CommunityRecommendationScreen";
+import EditPorterBookScreen from "../screens/market/porterBook/EditPorterBookScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -35,7 +37,7 @@ const AppNavigation = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName='Welcome'
+        initialRouteName="Welcome"
         screenOptions={({ route }) => ({
           header: ({ scene }) => {
             const { name } = route;
@@ -45,7 +47,7 @@ const AppNavigation = () => {
             // }
 
             // Hide title for "Login" screen
-            if (name === 'Login' || 'SignUp') {
+            if (name === "Login" || "SignUp") {
               return <CustomHeader title="" />;
             }
 
@@ -67,8 +69,13 @@ const AppNavigation = () => {
         />
         <Stack.Screen
           name="SignUp"
-          options={{ title: 'Sign Up' }}
+          options={{ title: "Sign Up" }}
           component={SignUpScreen}
+        />
+        <Stack.Screen
+          name="PorterSignUp"
+          options={{ title: "Porter Sign Up" }}
+          component={PorterSignUpScreen}
         />
         <Stack.Screen
           name="MyProfile"
@@ -131,6 +138,11 @@ const AppNavigation = () => {
           component={AllCommunityScreen}
         />
         <Stack.Screen
+          name="CommunityRecommendation"
+          options={{ headerShown: true }}
+          component={CommunityRecommendationScreen}
+        />
+        <Stack.Screen
           name="CreateCalendar"
           options={{ headerShown: true }}
           component={CreateCalendarScreen}
@@ -171,9 +183,9 @@ const AppNavigation = () => {
           component={PromotionScreen}
         />
         <Stack.Screen
-          name="CreatePorterBook"
+          name="CreateEventPost"
           options={{ headerShown: true }}
-          component={CreatePorterBookScreen}
+          component={CreateEventPostScreen}
         />
         <Stack.Screen
           name="AllPorterBook"

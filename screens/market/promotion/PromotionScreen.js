@@ -81,7 +81,7 @@ const PromotionScreen = () => {
     <View style={signUpStyles.container}>
       <SafeAreaView>
         <View style={signUpStyles.titleContainer}>
-          <Text style={signUpStyles.title}>Promotion/Code</Text>
+          <Text style={signUpStyles.title}>FYP/Promotion</Text>
         </View>
       </SafeAreaView>
       <View style={signUpStyles.contentContainer}>
@@ -91,7 +91,12 @@ const PromotionScreen = () => {
         </ScrollView>
       </View>
       <BottomNavigator />
-      {isAdmin && <FloatingButton targetScreen="CreatePromotion" />}
+      {isAdmin && (
+        <View style={styles.floatingButtonsContainer}>
+          <FloatingButton targetScreen="CreatePromotion" style={styles.floatingButton} />
+          <FloatingButton targetScreen="CreatePromotion" style={styles.floatingButton} />
+        </View>
+      )}
       <PromotionDetailsModal
         visible={isModalVisible}
         promotion={selectedPromotion}
@@ -110,5 +115,14 @@ const styles = StyleSheet.create({
   },
   button: {
     width: '22%', // กำหนดความกว้างของปุ่มเพื่อให้มี 4 ปุ่มในแถวเดียว
+  },
+  floatingButtonsContainer: {
+    position: 'absolute',
+    bottom: 80,
+    right: 20,
+    flexDirection: 'column',
+  },
+  floatingButton: {
+    marginBottom: 10, // ระยะห่างระหว่างปุ่ม
   },
 });

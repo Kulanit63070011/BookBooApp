@@ -12,7 +12,7 @@ const CommunityNavigationButtons = () => {
 
     return (
         <View style={styles.buttonContainer}>
-            <Button containerStyle={styles.button} title="Find Community" onPress={() => navigateTo('AllCommunity')} titleStyle={styles.buttonTitle} />
+            <Button containerStyle={styles.button} title="Find Community" onPress={() => navigateTo('CommunityRecommendation')} titleStyle={styles.buttonTitle} />
             <Button containerStyle={styles.button} title="My Community" onPress={() => navigateTo('MyCommunity')} titleStyle={styles.buttonTitle} />
         </View>
     );

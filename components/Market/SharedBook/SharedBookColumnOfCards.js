@@ -8,14 +8,12 @@ const SharedBookColumnOfCards = ({ cards, onPress, renderEditIcon }) => {
       {cards.map((book, index) => (
         <Pressable key={index} onPress={() => onPress(book)} style={styles.cardContainer}>
           <Image
-            source={require('../../../assets/images/bookcover.png')}
+            source={{ uri: book.thumbnail }} // เปลี่ยนเป็น URL จาก book.thumbnail
             style={styles.image}
           />
           <View style={styles.textContainer}>
             <Text style={styles.cardTitle}>{book.title}</Text>
-            {/* <Text style={styles.cardAuthor}>{book.author}</Text> */}
             <Text style={styles.cardText}>{book.aboutBook}</Text>
-            {/* <Text style={styles.cardStatus}>{book.status}</Text> */}
           </View>
           {renderEditIcon && (
             <View style={styles.editIconContainer}>
@@ -50,14 +48,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'white',
   },
-  cardAuthor: {
-    color: 'white',
-  },
   cardText: {
-    color: 'white',
-  },
-  cardStatus: {
-    marginTop: 5,
     color: 'white',
   },
   editIconContainer: {
