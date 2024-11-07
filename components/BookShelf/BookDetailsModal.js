@@ -1,11 +1,23 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, Pressable, TextInput, StyleSheet, ScrollView, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { Picker } from '@react-native-picker/picker';
 
 const BookDetailsModal = ({ visible, bookDetails, onClose, onDelete, onSave }) => {
   if (!visible || !bookDetails) {
     return null;
   }
+
+  const categories = [
+    'General novels', 'Romantic novels', 'Fantasy novels', 'Sci-fi novels',
+    'Adventure novels', 'Detective novels', 'Horror novels', 'Serial novels',
+    'General cartoons', 'Romantic cartoons', 'Fantasy cartoons', 'Sci-fi cartoons',
+    'Adventure cartoons', 'Detective cartoons', 'Horror cartoons', 'Serial cartoons',
+    'Finance and Investment', 'Market Accounting', 'Psychology', 'Self-Development',
+    'Education', 'Language', 'Law', 'Creative Design', 'Politics', 'Computer Science',
+    'History', 'Religious Beliefs', 'Pets', 'Health', 'Travel', 'Music and Entertainment',
+    'Food', 'Art', 'Others'
+  ];
 
   const [updatedDetails, setUpdatedDetails] = useState({
     ...bookDetails,
@@ -19,17 +31,18 @@ const BookDetailsModal = ({ visible, bookDetails, onClose, onDelete, onSave }) =
   };
 
   const handleSave = () => {
+    console.log(updatedDetails);  // ตรวจสอบข้อมูลที่ส่งไป
     onSave(updatedDetails, bookDetails.id);
-    onClose(); // Close the modal after saving the data
-  };
+    onClose();
+  };  
 
   return (
     <Modal transparent={true} animationType="slide" visible={visible}>
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
-          <View style={[styles.topBar]}>
-            <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold', fontSize: 25 }}>Edit My Book</Text>
-            <Pressable onPress={onClose} style={[styles.closeButton, { userSelect: 'none' }]}>
+          <View style={styles.topBar}>
+            <Text style={{ color: 'white', fontSize: 25, fontWeight: 'bold' }}>Edit My Book</Text>
+            <Pressable onPress={onClose} style={styles.closeButton}>
               <MaterialIcons name="close" size={30} color="white" />
             </Pressable>
           </View>
@@ -44,40 +57,47 @@ const BookDetailsModal = ({ visible, bookDetails, onClose, onDelete, onSave }) =
               <TextInput
                 style={styles.input}
                 value={updatedDetails.title}
-                onChangeText={(text) => handleInputChange('title', text)}
+                editable={false} // ไม่สามารถแก้ไขได้
               />
               <Text style={styles.label}>Type:</Text>
-              <TextInput
-                style={styles.input}
-                value={updatedDetails.bookType}
-                onChangeText={(text) => handleInputChange('bookType', text)}
-              />
+              <Picker
+                selectedValue={updatedDetails.bookType}
+                onValueChange={(value) => handleInputChange('bookType', value)}
+                style={styles.picker}
+              >
+                <Picker.Item label="Select a category" value="" />
+                {categories.map((category, index) => (
+                  <Picker.Item label={category} value={category} key={index} />
+                ))}
+              </Picker>
               <Text style={styles.label}>Author:</Text>
               <TextInput
                 style={styles.input}
                 value={updatedDetails.author}
-                onChangeText={(text) => handleInputChange('author', text)}
-              />
-              <Text style={styles.label}>Purchase Date:</Text>
-              <TextInput
-                style={styles.input}
-                value={updatedDetails.purchaseDate}
-                onChangeText={(text) => handleInputChange('purchaseDate', text)}
+                editable={false} // ไม่สามารถแก้ไขได้
               />
               <Text style={styles.label}>About Book:</Text>
               <TextInput
                 style={[styles.input, { height: 80 }]}
                 value={updatedDetails.aboutBook}
-                onChangeText={(text) => handleInputChange('aboutBook', text)}
+                editable={false} // ไม่สามารถแก้ไขได้
+                multiline={true}
+              />
+              <Text style={styles.label}>Additional Notes:</Text>
+              <TextInput
+                style={[styles.input, { height: 80 }]}
+                value={updatedDetails.detailBookByUser}
+                onChangeText={(text) => handleInputChange('detailBookByUser', text)}
+                placeholder="Add your personal notes here"
                 multiline={true}
               />
             </View>
           </ScrollView>
           <View style={styles.bottomBar}>
-            <Pressable onPress={handleSave} style={[styles.actionButton, { userSelect: 'auto', marginRight: 10 }]}>
+            <Pressable onPress={handleSave} style={styles.actionButton}>
               <Text style={{ color: '#4542C1' }}>Save</Text>
             </Pressable>
-            <Pressable onPress={onDelete} style={[styles.actionButton, { backgroundColor: 'red', userSelect: 'auto' }]}>
+            <Pressable onPress={onDelete} style={[styles.actionButton, { backgroundColor: 'red' }]}>
               <Text style={styles.buttonText}>Delete</Text>
             </Pressable>
           </View>
@@ -85,7 +105,6 @@ const BookDetailsModal = ({ visible, bookDetails, onClose, onDelete, onSave }) =
       </View>
     </Modal>
   );
-
 };
 
 const styles = StyleSheet.create({
@@ -107,9 +126,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 20,
-    flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
   },
   closeButton: {
     padding: 10,

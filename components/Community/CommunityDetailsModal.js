@@ -9,7 +9,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { doc, updateDoc, arrayUnion, setDoc } from "firebase/firestore";
+import { doc, updateDoc, arrayUnion, setDoc, getDoc } from "firebase/firestore";
 import { db, auth } from "../../backend/firebase";
 import { useNavigation } from "@react-navigation/native";
 
@@ -48,19 +48,13 @@ const CommunityDetailsModal = ({ visible, communityDetails, onClose }) => {
         });
 
         // อัปเดตความสนใจของผู้ใช้ในคอลเลกชัน interests
-        const interestsDocRef = doc(db, "interests", user.uid); // ใช้ user.uid เป็น document ID
-        await setDoc(
-          interestsDocRef,
-          {
-            interests: arrayUnion(communityDetails.type), // เพิ่มประเภทชุมชนในความสนใจ
-          },
-          { merge: true }
-        ); // ใช้ merge เพื่อไม่ให้ข้อมูลเดิมหาย
+        const interestsDocRef = doc(db, "interests", user.uid);
+        await updateUserInterests(user.uid, communityDetails.type); // อัปเดตความสนใจ
 
         // อัปเดตความสนใจของผู้ใช้ในเอกสาร users
-        const userDocRef = doc(db, "users", user.uid); // เปลี่ยนเป็นการอัปเดตที่ถูกต้องในคอลเลกชัน users
+        const userDocRef = doc(db, "users", user.uid);
         await updateDoc(userDocRef, {
-          interests: arrayUnion(communityDetails.type), // เพิ่มประเภทชุมชนในความสนใจของผู้ใช้
+          interests: arrayUnion(communityDetails.type),
         });
 
         onClose();
@@ -70,6 +64,37 @@ const CommunityDetailsModal = ({ visible, communityDetails, onClose }) => {
       }
     } catch (error) {
       console.error("Error joining community:", error.message);
+    }
+  };
+
+  const updateUserInterests = async (userUid, newType) => {
+    try {
+      const userInterestsRef = doc(db, "interests", userUid);
+      const userDoc = await getDoc(userInterestsRef);
+
+      // ถ้าผู้ใช้มีข้อมูลความสนใจแล้ว
+      if (userDoc.exists()) {
+        let interests = userDoc.data().interests || [];
+
+        // ลบประเภทที่ซ้ำกัน (ถ้ามี) และเพิ่มที่ท้ายสุด
+        interests = interests.filter((interest) => interest !== newType);
+        interests.push(newType);
+
+        // ถ้าจำนวนความสนใจเกิน 10 ลบประเภทที่เก่าออก
+        if (interests.length > 10) {
+          interests.shift();
+        }
+
+        // อัปเดต Firestore
+        await updateDoc(userInterestsRef, { interests });
+      } else {
+        // ถ้าไม่มีข้อมูลผู้ใช้ สร้างใหม่
+        await setDoc(userInterestsRef, {
+          interests: [newType],
+        });
+      }
+    } catch (error) {
+      console.error("Error updating user interests:", error.message);
     }
   };
 

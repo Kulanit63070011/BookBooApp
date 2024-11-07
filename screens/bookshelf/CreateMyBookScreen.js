@@ -1,131 +1,213 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, TextInput, ScrollView, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { doc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
-import { auth, db } from '../../backend/firebase';
-import { createMyBookStyles } from '../../style/bookshelf/CreateMyBookStyle';
+import { View, Text, TextInput, Pressable, StyleSheet, FlatList, Image, ScrollView } from 'react-native';
+import { collection, doc, setDoc, getDoc, addDoc } from 'firebase/firestore';
+import { db, auth } from '../../backend/firebase';
+import { Picker } from '@react-native-picker/picker';
+import axios from 'axios';
 
-const CreateMyBookScreen = () => {
-  const navigation = useNavigation();
-  const [title, setTitle] = useState('');
-  const [bookType, setBookType] = useState('');
-  const [author, setAuthor] = useState('');
-  const [purchaseDate, setPurchaseDate] = useState('');
-  const [aboutBook, setAboutBook] = useState('');
+const GOOGLE_BOOKS_API_URL = 'https://www.googleapis.com/books/v1/volumes';
 
-  const handleSaveToFirestore = async (bookData) => {
+const CreateMyBookScreen = ({ navigation }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [userNote, setUserNote] = useState(''); // state สำหรับเก็บ note
+
+  const categories = [
+    'General novels', 'Romantic novels', 'Fantasy novels', 'Sci-fi novels',
+    'Adventure novels', 'Detective novels', 'Horror novels', 'Serial novels',
+    'General cartoons', 'Romantic cartoons', 'Fantasy cartoons', 'Sci-fi cartoons',
+    'Adventure cartoons', 'Detective cartoons', 'Horror cartoons', 'Serial cartoons',
+    'Finance and Investment', 'Market Accounting', 'Psychology', 'Self-Development',
+    'Education', 'Language', 'Law', 'Creative Design', 'Politics', 'Computer Science',
+    'History', 'Religious Beliefs', 'Pets', 'Health', 'Travel', 'Music and Entertainment',
+    'Food', 'Art', 'Others'
+  ];
+
+  const searchBooks = async () => {
     try {
-      const user = auth.currentUser;
-
-      if (!user) {
-        console.error('User not found.');
-        return;
-      }
-
-      const bookshelfId = user.uid; // ใช้ UID ของผู้ใช้เป็น bookshelfId
-
-      // ตรวจสอบว่ามีชั้นหนังสือของผู้ใช้อยู่แล้วหรือไม่
-      const bookshelfRef = doc(db, 'bookshelves', bookshelfId);
-      const bookshelfSnap = await getDoc(bookshelfRef);
-
-      if (!bookshelfSnap.exists()) {
-        // ถ้าไม่มีให้สร้างชั้นหนังสือใหม่ของผู้ใช้
-        await setDoc(bookshelfRef, { books: [bookData] });
-      } else {
-        // ถ้ามีให้เพิ่มหนังสือลงในชั้นหนังสือของผู้ใช้
-        const existingBooks = bookshelfSnap.data().books || [];
-        await updateDoc(bookshelfRef, { books: [...existingBooks, bookData] });
-      }
-
-      alert('Book saved successfully');
+      const response = await axios.get(GOOGLE_BOOKS_API_URL, {
+        params: { q: searchQuery }
+      });
+      setSearchResults(response.data.items || []);
     } catch (error) {
-      console.error('Error saving book to Firestore:', error.message);
-      throw error;
+      console.error('Error searching books:', error);
     }
   };
 
+  const saveBookToFirestore = async () => {
+    if (!selectedBook || !selectedCategory) {
+      console.error('Please complete all required fields');
+      return;
+    }
 
-  const handleSave = async () => {
     try {
       const user = auth.currentUser;
-
-      if (!title || !author) {
-        alert('Please enter required information (book title and author)');
+      if (!user) {
+        console.error('User not authenticated.');
         return;
       }
 
-      if (user) {
-        // เพิ่มข้อมูลหนังสือลงใน Firestore
-        const bookData = {
-          title,
-          bookType,
-          author,
-          purchaseDate,
-          aboutBook,
-        };
+      const bookData = {
+        bookId: selectedBook.id,
+        title: selectedBook.volumeInfo.title,
+        author: selectedBook.volumeInfo.authors?.join(', '),
+        aboutBook: selectedBook.volumeInfo.description,
+        thumbnail: selectedBook.volumeInfo.imageLinks?.thumbnail,
+        category: selectedCategory,
+        detailBookByUser: userNote || null,
+      };
 
-        await handleSaveToFirestore(bookData);
+      const userBookshelfRef = doc(db, 'bookshelves', user.uid);
+      const bookshelfSnap = await getDoc(userBookshelfRef);
 
-        // ล้างข้อมูลหนังสือที่ใส่ใน input fields หลังจากบันทึก
-        setTitle('');
-        setBookType('');
-        setAuthor('');
-        setPurchaseDate('');
-        setAboutBook('');
-
-        alert('Book saved successfully');
-      } else {
-        console.error('User not found');
+      if (!bookshelfSnap.exists()) {
+        await setDoc(userBookshelfRef, { userId: user.uid });
       }
+
+      await addDoc(collection(userBookshelfRef, 'myBooks'), bookData);
+      console.log('Book added to bookshelf successfully:', bookData);
+
+      setSearchQuery('');
+      setSearchResults([]);
+      setSelectedBook(null);
+      setSelectedCategory('');
+      setUserNote('');
       navigation.navigate('MyBookShelf', { refresh: true });
     } catch (error) {
-      console.error('Error saving book:', error.message);
+      console.error('Error adding book to bookshelf:', error.message);
     }
   };
 
   return (
-    <ScrollView>
-      <View style={createMyBookStyles.modalContainer}>
-        <Image source={require('../../assets/images/bookcover.png')} resizeMode="cover" style={createMyBookStyles.modalImage} />
-        <View style={createMyBookStyles.modalContent}>
-          <Text style={createMyBookStyles.label}>Book Title:</Text>
-          <TextInput
-            style={createMyBookStyles.input}
-            value={title}
-            onChangeText={(text) => setTitle(text)}
-          />
-          <Text style={createMyBookStyles.label}>Book Type:</Text>
-          <TextInput
-            style={createMyBookStyles.input}
-            value={bookType}
-            onChangeText={(text) => setBookType(text)}
-          />
-          <Text style={createMyBookStyles.label}>Author:</Text>
-          <TextInput
-            style={createMyBookStyles.input}
-            value={author}
-            onChangeText={(text) => setAuthor(text)}
-          />
-          <Text style={createMyBookStyles.label}>Purchase Date:</Text>
-          <TextInput
-            style={createMyBookStyles.input}
-            value={purchaseDate}
-            onChangeText={(text) => setPurchaseDate(text)}
-          />
-          <Text style={createMyBookStyles.label}>About the Book:</Text>
-          <TextInput
-            style={[createMyBookStyles.input, { height: 80 }]}
-            value={aboutBook}
-            onChangeText={(text) => setAboutBook(text)}
-            multiline={true}
-          />
-        </View>
-        <Pressable onPress={handleSave} style={createMyBookStyles.actionButton}>
-          <Text style={createMyBookStyles.buttonText}>Save</Text>
-        </Pressable>
-      </View>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Add Book to My Bookshelf</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Search for a book"
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+      />
+      <Pressable style={styles.searchButton} onPress={searchBooks}>
+        <Text style={styles.buttonText}>Search</Text>
+      </Pressable>
+
+      {selectedBook ? (
+        <>
+          <Text style={styles.label}>Selected Book:</Text>
+          <Text style={styles.selectedBookText}>Title: {selectedBook.volumeInfo.title}</Text>
+          <Text style={styles.selectedBookText}>Author: {selectedBook.volumeInfo.authors?.join(', ')}</Text>
+          <Text style={styles.selectedBookText}>Description: {selectedBook.volumeInfo.description}</Text>
+          <Image source={{ uri: selectedBook.volumeInfo.imageLinks?.thumbnail }} style={styles.thumbnail} />
+        </>
+      ) : (
+        <FlatList
+          data={searchResults}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <Pressable onPress={() => setSelectedBook(item)}>
+              <View style={styles.bookItemContainer}>
+                <Image source={{ uri: item.volumeInfo.imageLinks?.thumbnail }} style={styles.thumbnail} />
+                <Text style={styles.bookItem}>{item.volumeInfo.title}</Text>
+              </View>
+            </Pressable>
+          )}
+        />
+      )}
+
+      <Text style={styles.label}>Select Book Category:</Text>
+      <Picker
+        selectedValue={selectedCategory}
+        onValueChange={(itemValue) => setSelectedCategory(itemValue)}
+        style={styles.picker}
+      >
+        <Picker.Item label="Select a category" value="" />
+        {categories.map((category, index) => (
+          <Picker.Item label={category} value={category} key={index} />
+        ))}
+      </Picker>
+      <Text style={styles.label}>Note (optional):</Text>
+      <TextInput
+        style={[styles.input, { height: 80 }]}
+        placeholder="Add any notes here..."
+        value={userNote}
+        onChangeText={setUserNote}
+        multiline
+      />
+      <Pressable style={styles.createButton} onPress={saveBookToFirestore}>
+        <Text style={styles.buttonText}>Save Book</Text>
+      </Pressable>
     </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  input: {
+    width: '100%',
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    marginBottom: 20,
+  },
+  searchButton: {
+    backgroundColor: '#007bff',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  picker: {
+    height: 50,
+    width: '100%',
+    marginBottom: 20,
+  },
+  bookItemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  bookItem: {
+    fontSize: 16,
+    padding: 10,
+    flexShrink: 1,
+  },
+  thumbnail: {
+    width: 50,
+    height: 75,
+    marginRight: 10,
+  },
+  selectedBookText: {
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  createButton: {
+    backgroundColor: '#28a745',
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 10,
+  },
+});
 
 export default CreateMyBookScreen;

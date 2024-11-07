@@ -5,6 +5,7 @@ import { initializeAuth, getAuth, signInWithEmailAndPassword, createUserWithEmai
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { firebaseConfig } from './firebaseConfig';
 import { doc, getDoc, addDoc, collection } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 
 const app = initializeApp(firebaseConfig);
 let auth;
@@ -20,6 +21,7 @@ if (Platform.OS === 'web') {
 }
 
 const db = getFirestore(app);
+const storage = getStorage(app);
 
-export { app, auth, db, signInWithEmailAndPassword, createUserWithEmailAndPassword, doc, getDoc, addDoc, collection };
+export { app, auth, db, storage, signInWithEmailAndPassword, createUserWithEmailAndPassword, doc, getDoc, addDoc, collection };
 

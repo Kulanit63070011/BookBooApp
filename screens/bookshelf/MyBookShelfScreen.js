@@ -10,7 +10,7 @@ import { myBookShelfStyles } from '../../style/bookshelf/MyBookShelfStyle';
 import { signUpStyles } from '../../style/user/SignUpStyle';
 import { allCommunityStyles } from '../../style/community/AllCommunityStyle';
 import { auth, db } from '../../backend/firebase';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore';
 
 const MyBookShelfScreen = () => {
   const navigation = useNavigation();
@@ -26,24 +26,19 @@ const MyBookShelfScreen = () => {
       try {
         const user = auth.currentUser;
         if (user) {
-          // สร้าง query เพื่อดึงข้อมูลหนังสือของผู้ใช้ปัจจุบันจากคอลเล็กชัน "bookshelves"
-          const userBookshelfRef = doc(db, 'bookshelves', user.uid);
-          const bookshelfSnap = await getDoc(userBookshelfRef);
-
-          if (bookshelfSnap.exists()) {
-            const bookshelfData = bookshelfSnap.data();
-            const booksInBookshelf = bookshelfData.books || [];
-
-            setBooks(booksInBookshelf);
-          } else {
-            console.log('User bookshelf not found');
-          }
+          const userBookshelfRef = collection(db, 'bookshelves', user.uid, 'myBooks');
+          const querySnapshot = await getDocs(userBookshelfRef);
+          const booksInBookshelf = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  
+          setBooks(booksInBookshelf);
+        } else {
+          console.log('User not authenticated');
         }
       } catch (error) {
         console.error('Error fetching user books:', error.message);
       }
     };
-
+  
     if (isFocused) {
       fetchBooks();
     }
@@ -57,43 +52,30 @@ const MyBookShelfScreen = () => {
   const openBookDetails = (book) => {
     setSelectedBook(book);
     setIsModalVisible(true);
-  };
+    console.log(book);  // ตรวจสอบว่า selectedBook ได้รับข้อมูลจากการคลิกถูกต้องหรือไม่
+  };  
 
   const saveBookChanges = async (updatedDetails, bookId) => {
     try {
       const user = auth.currentUser;
       if (user) {
-        const userBookshelfRef = doc(db, 'bookshelves', user.uid);
-        const bookshelfSnap = await getDoc(userBookshelfRef);
-
-        if (bookshelfSnap.exists()) {
-          const bookshelfData = bookshelfSnap.data();
-          let booksInBookshelf = bookshelfData.books || [];
-
-          // อัปเดตข้อมูลเฉพาะหนังสือที่ตรงกับ bookId
-          const updatedBooks = booksInBookshelf.map(book => {
-            if (book.id === bookId) {
-              return { ...book, ...updatedDetails };
-            }
-            return book;
-          });
-
-          // อัปเดตข้อมูลหนังสือใน Firestore
-          await updateDoc(userBookshelfRef, { books: updatedBooks });
-
-          // อัปเดตสถานะหนังสือในแอปพลิเคชัน
-          setBooks(updatedBooks);
-
-          alert('Book updated successfully');
-        } else {
-          console.log('User bookshelf not found');
-        }
+        const userBookshelfRef = doc(db, 'bookshelves', user.uid, 'myBooks', bookId); // ระบุ document id ที่ตรงกับ bookId
+        await updateDoc(userBookshelfRef, updatedDetails); // อัปเดตข้อมูลในเอกสารนั้น
+  
+        // อัปเดตสถานะหนังสือในแอปพลิเคชัน
+        const updatedBooks = books.map(book => 
+          book.id === bookId ? { ...book, ...updatedDetails } : book
+        );
+        setBooks(updatedBooks); // อัปเดตสถานะใน state
+  
+        alert('Book updated successfully');
       }
     } catch (error) {
       console.error('Error saving book changes:', error.message);
       throw error;
     }
   };
+  
 
   return (
     <View style={signUpStyles.container}>

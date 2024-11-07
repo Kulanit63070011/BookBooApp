@@ -1,9 +1,17 @@
-import React, { useState, useEffect } from "react"; 
-import { Modal, View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from "react-native"; 
-import { useNavigation } from "@react-navigation/native"; 
-import PorterRequestModal from "./PorterRequestModal"; 
-import PorterSelectionModal from "./PorterSelectionModal"; 
-import { collection, query, where, getDocs } from "firebase/firestore"; 
+import React, { useState, useEffect } from "react";
+import {
+  Modal,
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import PorterRequestModal from "./PorterRequestModal";
+import PorterSelectionModal from "./PorterSelectionModal";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../../backend/firebase";
 
 const PorterBookDetailModal = ({ visible, postData, onClose, userRole }) => {
@@ -41,7 +49,7 @@ const PorterBookDetailModal = ({ visible, postData, onClose, userRole }) => {
 
   const fetchItems = async () => {
     try {
-      const itemsRef = collection(db, `events/${postData.id}/items`); // ใช้ path ที่ถูกต้อง
+      const itemsRef = collection(db, `events/${postData.id}/items`); // Correct path to fetch items
       const querySnapshot = await getDocs(itemsRef);
 
       const itemsList = querySnapshot.docs.map((doc) => ({
@@ -67,9 +75,9 @@ const PorterBookDetailModal = ({ visible, postData, onClose, userRole }) => {
         <View style={styles.imageGrid}>
           <Image
             source={
-              item.image
-                ? { uri: item.image }
-                : require("../../../assets/images/bookcover.png")
+              item.itemImage // Ensure this points to the image URL from Firebase Storage
+                ? { uri: item.itemImage }
+                : require("../../../assets/images/bookcover.png") // Fallback image if no image is provided
             }
             style={styles.bookImage}
           />

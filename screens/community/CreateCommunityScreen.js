@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, Image, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../backend/firebase';
+import { doc, setDoc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
 import { createCommunityStyles } from '../../style/community/CreateCommunityStyle';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
@@ -52,19 +52,73 @@ const CreateCommunityScreen = () => {
     { category: 'Others' }
   ];
 
+  const updateUserInterests = async (userUid, newType) => {
+    try {
+      const userInterestsRef = doc(db, "interests", userUid);
+      const userDocRef = doc(db, "users", userUid); // Reference to user document in "users" collection
+      const userDoc = await getDoc(userInterestsRef);
+      const userDocSnapshot = await getDoc(userDocRef); // Fetch the user's document
+  
+      // ถ้าผู้ใช้มีข้อมูลความสนใจแล้ว
+      if (userDoc.exists()) {
+        let interests = userDoc.data().interests || [];
+        // ลบประเภทที่ซ้ำกัน (ถ้ามี) และเพิ่มที่ท้ายสุด
+        interests = interests.filter((interest) => interest !== newType);
+        interests.push(newType);
+  
+        // ถ้าจำนวนความสนใจเกิน 10 ลบประเภทที่เก่าออก
+        if (interests.length > 10) {
+          interests.shift();
+        }
+  
+        // อัปเดต Firestore ใน "interests"
+        await updateDoc(userInterestsRef, { interests });
+      } else {
+        // ถ้าไม่มีข้อมูลผู้ใช้ใน "interests" ให้สร้างใหม่
+        await setDoc(userInterestsRef, {
+          interests: [newType],
+        });
+      }
+  
+      // อัปเดตความสนใจใน field "interests" ของเอกสารใน "users"
+      if (userDocSnapshot.exists()) {
+        let userInterests = userDocSnapshot.data().interests || [];
+  
+        // ลบประเภทที่ซ้ำกัน (ถ้ามี) และเพิ่มที่ท้ายสุด
+        userInterests = userInterests.filter((interest) => interest !== newType);
+        userInterests.push(newType);
+  
+        // ถ้าจำนวนความสนใจเกิน 10 ลบประเภทที่เก่าออก
+        if (userInterests.length > 10) {
+          userInterests.shift();
+        }
+  
+        // อัปเดต Firestore ใน "users"
+        await updateDoc(userDocRef, { interests: userInterests });
+      } else {
+        // ถ้าไม่มีข้อมูลใน "users" ให้สร้างใหม่
+        await setDoc(userDocRef, {
+          interests: [newType],
+        });
+      }
+    } catch (error) {
+      console.error("Error updating user interests:", error.message);
+    }
+  };  
+  
   const handleCreateCommunity = async () => {
     try {
       const user = auth.currentUser;
-
+      
       if (!type || !name || !user) {
         alert('Please fill in required information (Type, Name, and Creator)');
         return;
       }
-
+  
       const createdByUser = user.uid;
       const creationTimestamp = new Date();
       const membersArray = [createdByUser];
-
+    
       const communityData = {
         communityId: name,
         type,
@@ -75,17 +129,45 @@ const CreateCommunityScreen = () => {
         createdBy: createdByUser,
         createdDate: creationTimestamp,
       };
-
+    
       const communityDocRef = doc(db, 'communities', name);
       await setDoc(communityDocRef, communityData);
-
+  
+      // อัปเดตความสนใจในคอลเลกชัน users
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDocSnapshot = await getDoc(userDocRef);
+  
+      if (userDocSnapshot.exists()) {
+        let userInterests = userDocSnapshot.data().interests || [];
+        // ลบประเภทที่ซ้ำกัน (ถ้ามี) และเพิ่มที่ท้ายสุด
+        userInterests = userInterests.filter((interest) => interest !== type);
+        userInterests.push(type);
+    
+        // ถ้าจำนวนความสนใจเกิน 10 ลบประเภทที่เก่าออก
+        if (userInterests.length > 10) {
+          userInterests.shift();
+        }
+    
+        await updateDoc(userDocRef, { interests: userInterests });
+      } else {
+        // ถ้าไม่มีข้อมูลใน "users" ให้สร้างใหม่
+        await setDoc(userDocRef, {
+          interests: [type],
+        });
+      }
+  
+      // อัปเดตความสนใจใน "interests"
+      await updateUserInterests(user.uid, type);
+      
       alert('Community created successfully');
-
       navigation.navigate('AllCommunity', { refresh: true });
     } catch (error) {
       console.error('Error creating community:', error.message);
     }
   };
+   
+  
+
 
   const pickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();

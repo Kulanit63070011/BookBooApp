@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, SafeAreaView, Pressable } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  Image,
+  SafeAreaView,
+  Pressable,
+} from "react-native";
 import BottomNavigator from "../../../navigation/BottomNavigator";
 import FloatingButton from "../../../components/common/FloatingAddButton";
 import { signUpStyles } from "../../../style/user/SignUpStyle";
@@ -23,6 +32,7 @@ const AllPorterBookScreen = () => {
     const snapshot = await getDocs(eventsCollection);
     const eventsData = snapshot.docs.map((doc) => ({
       id: doc.id,
+      eventImageUrl: doc.data().eventImage, // Assuming eventImage is stored in the Firestore document
       ...doc.data(),
     }));
     setPorterBooks(eventsData);
@@ -81,14 +91,19 @@ const AllPorterBookScreen = () => {
         {renderEditIcon(post)}
       </View>
       <Text style={styles.date}>
-        Start Date: {new Date(post.startDate).toLocaleDateString()} | End Date: {new Date(post.endDate).toLocaleDateString()}
+        Start Date: {new Date(post.startDate).toLocaleDateString()} | End Date:{" "}
+        {new Date(post.endDate).toLocaleDateString()}
       </Text>
       <Text style={styles.about}>{post.about}</Text>
       <View style={styles.imageGrid}>
-        <Image
-          source={require("../../../assets/images/bookcover.png")}
-          style={styles.bookImage}
-        />
+        {post.eventImageUrl ? (
+          <Image
+            source={{ uri: post.eventImageUrl }}
+            style={styles.bookImage}
+          />
+        ) : (
+          <Text>No Image Available</Text>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -113,7 +128,7 @@ const AllPorterBookScreen = () => {
           visible={modalVisible}
           postData={selectedPost}
           onClose={() => setModalVisible(false)}
-          userRole={isPorter ? 'porter' : 'user'}
+          userRole={isPorter ? "porter" : "user"}
         />
         {isPorter && (
           <View style={{ position: "absolute", bottom: 20, right: 20 }}>
@@ -158,7 +173,7 @@ const styles = StyleSheet.create({
   },
   date: {
     marginBottom: 10,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
   about: {
     marginBottom: 10,
