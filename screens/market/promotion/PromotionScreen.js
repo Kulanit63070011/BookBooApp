@@ -18,7 +18,7 @@ const PromotionScreen = () => {
   const [promotions, setPromotions] = useState([]);
   const [selectedPromotion, setSelectedPromotion] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false); // Add state to track admin status
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const fetchPromotions = async () => {
@@ -31,6 +31,7 @@ const PromotionScreen = () => {
             id: doc.id,
             title: promotionData.title,
             description: promotionData.description,
+            promotionImage: promotionData.promotionImage || null, // เพิ่มการดึง URL รูปภาพ
           });
         });
         setPromotions(promotionList);
@@ -41,13 +42,11 @@ const PromotionScreen = () => {
 
     fetchPromotions();
 
-    // Check if current user is admin
     const user = auth.currentUser;
     if (user && user.email && user.email.includes('@bookboo.com')) {
       setIsAdmin(true);
     }
 
-    // Subscribe to realtime updates on promotions
     const unsubscribe = onSnapshot(collection(db, 'promotions'), (snapshot) => {
       const updatedPromotions = [];
       snapshot.forEach((doc) => {
@@ -65,12 +64,6 @@ const PromotionScreen = () => {
   const openPromotionDetails = (promotion) => {
     setSelectedPromotion(promotion);
     setIsModalVisible(true);
-
-    // Log event when user opens promotion details
-    // analytics().logEvent('promotion_view', {
-    //   promotion_id: promotion.id,
-    //   promotion_title: promotion.title,
-    // });
   };
 
   const closeModal = () => {
@@ -103,6 +96,7 @@ const PromotionScreen = () => {
         onClose={closeModal}
       />
     </View>
+    
   );
 };
 

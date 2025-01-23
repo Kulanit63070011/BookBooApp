@@ -5,6 +5,7 @@ export const myProfileStyles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: 'white'
     },
     profileContainer: {
         alignItems: 'center',

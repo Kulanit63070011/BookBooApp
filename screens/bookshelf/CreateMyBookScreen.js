@@ -6,6 +6,7 @@ import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
 
 const GOOGLE_BOOKS_API_URL = 'https://www.googleapis.com/books/v1/volumes';
+const API_KEY = 'AIzaSyDuKh_ecx2W1ZsbdK_j0U9mSEgMYxNcbgs';
 
 const CreateMyBookScreen = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -17,9 +18,7 @@ const CreateMyBookScreen = ({ navigation }) => {
   const categories = [
     'General novels', 'Romantic novels', 'Fantasy novels', 'Sci-fi novels',
     'Adventure novels', 'Detective novels', 'Horror novels', 'Serial novels',
-    'General cartoons', 'Romantic cartoons', 'Fantasy cartoons', 'Sci-fi cartoons',
-    'Adventure cartoons', 'Detective cartoons', 'Horror cartoons', 'Serial cartoons',
-    'Finance and Investment', 'Market Accounting', 'Psychology', 'Self-Development',
+    'Cartoons & Anime','Finance and Investment', 'Market Accounting', 'Psychology', 'Self-Development',
     'Education', 'Language', 'Law', 'Creative Design', 'Politics', 'Computer Science',
     'History', 'Religious Beliefs', 'Pets', 'Health', 'Travel', 'Music and Entertainment',
     'Food', 'Art', 'Others'
@@ -28,7 +27,9 @@ const CreateMyBookScreen = ({ navigation }) => {
   const searchBooks = async () => {
     try {
       const response = await axios.get(GOOGLE_BOOKS_API_URL, {
-        params: { q: searchQuery }
+        params: { q: searchQuery,
+          key: API_KEY,
+         }
       });
       setSearchResults(response.data.items || []);
     } catch (error) {
@@ -82,7 +83,7 @@ const CreateMyBookScreen = ({ navigation }) => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Add Book to My Bookshelf</Text>
+      <Text style={styles.title}>Add a Book to Your Shelf</Text>
       <TextInput
         style={styles.input}
         placeholder="Search for a book"
@@ -94,13 +95,15 @@ const CreateMyBookScreen = ({ navigation }) => {
       </Pressable>
 
       {selectedBook ? (
-        <>
+        <View>
           <Text style={styles.label}>Selected Book:</Text>
           <Text style={styles.selectedBookText}>Title: {selectedBook.volumeInfo.title}</Text>
           <Text style={styles.selectedBookText}>Author: {selectedBook.volumeInfo.authors?.join(', ')}</Text>
-          <Text style={styles.selectedBookText}>Description: {selectedBook.volumeInfo.description}</Text>
-          <Image source={{ uri: selectedBook.volumeInfo.imageLinks?.thumbnail }} style={styles.thumbnail} />
-        </>
+          <Image
+            source={{ uri: selectedBook.volumeInfo.imageLinks?.thumbnail }}
+            style={styles.thumbnail}
+          />
+        </View>
       ) : (
         <FlatList
           data={searchResults}
@@ -116,7 +119,7 @@ const CreateMyBookScreen = ({ navigation }) => {
         />
       )}
 
-      <Text style={styles.label}>Select Book Category:</Text>
+      <Text style={styles.label}>Select a Category:</Text>
       <Picker
         selectedValue={selectedCategory}
         onValueChange={(itemValue) => setSelectedCategory(itemValue)}
@@ -127,14 +130,16 @@ const CreateMyBookScreen = ({ navigation }) => {
           <Picker.Item label={category} value={category} key={index} />
         ))}
       </Picker>
-      <Text style={styles.label}>Note (optional):</Text>
+
+      <Text style={styles.label}>Add a Note (optional):</Text>
       <TextInput
-        style={[styles.input, { height: 80 }]}
+        style={[styles.input, { height: 80, textAlignVertical: 'top' }]}
         placeholder="Add any notes here..."
         value={userNote}
         onChangeText={setUserNote}
         multiline
       />
+
       <Pressable style={styles.createButton} onPress={saveBookToFirestore}>
         <Text style={styles.buttonText}>Save Book</Text>
       </Pressable>
@@ -145,68 +150,90 @@ const CreateMyBookScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    alignItems: 'center',
-    paddingHorizontal: 20,
+    padding: 20,
+    backgroundColor: '#f7f9fc', // สีพื้นหลังที่ดูสะอาด
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
+    color: '#333',
     marginBottom: 20,
+    textAlign: 'center',
   },
   input: {
     width: '100%',
-    height: 40,
-    borderColor: 'gray',
+    height: 45,
+    borderColor: '#ddd',
     borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    marginBottom: 20,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    backgroundColor: 'white',
+    marginBottom: 16,
+    fontSize: 16,
   },
   searchButton: {
-    backgroundColor: '#007bff',
-    paddingVertical: 10,
+    backgroundColor: 'gray',
+    paddingVertical: 12,
     paddingHorizontal: 20,
-    borderRadius: 10,
+    borderRadius: 8,
     marginBottom: 20,
+    alignItems: 'center',
   },
   buttonText: {
     color: 'white',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   label: {
     fontSize: 16,
-    marginBottom: 10,
+    fontWeight: '500',
+    color: '#555',
+    marginBottom: 8,
   },
   picker: {
-    height: 50,
     width: '100%',
-    marginBottom: 20,
+    height: 50,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    backgroundColor: 'white',
+    marginBottom: 16,
   },
   bookItemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
   },
   bookItem: {
     fontSize: 16,
-    padding: 10,
+    marginLeft: 10,
+    color: '#333',
     flexShrink: 1,
   },
   thumbnail: {
-    width: 50,
-    height: 75,
-    marginRight: 10,
+    width: 60,
+    height: 90,
+    borderRadius: 4,
   },
   selectedBookText: {
     fontSize: 16,
-    marginBottom: 10,
+    color: '#555',
+    marginBottom: 8,
   },
   createButton: {
-    backgroundColor: '#28a745',
-    paddingVertical: 12,
-    paddingHorizontal: 40,
-    borderRadius: 10,
+    backgroundColor: 'red',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 20,
   },
 });
 

@@ -7,6 +7,8 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { db, auth } from '../../backend/firebase';
 import { setDoc, doc } from 'firebase/firestore';
 import * as ImagePicker from 'expo-image-picker';
+import DateTimePicker from "@react-native-community/datetimepicker";
+import DatePicker from "react-datepicker";
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 export default function PorterSignUpScreen() {
@@ -19,6 +21,8 @@ export default function PorterSignUpScreen() {
   const [aboutMe, setAboutMe] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [imageUri, setImageUri] = useState(null); // Add state for image URI
+  const [birthDate, setBirthDate] = useState(new Date()); // Store selected birthdate
+  const [showDatePicker, setShowDatePicker] = useState(false); // To show/hide date picker
   const storage = getStorage();
 
   const handleSignUp = async () => {
@@ -31,25 +35,23 @@ export default function PorterSignUpScreen() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const userId = userCredential.user.uid;
       const userDocRef = doc(db, 'users', userId);
-      const bookshelfId = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
       let userImageUrl = null;
       if (imageUri) {
         const response = await fetch(imageUri);
         const blob = await response.blob();
-        const storageRef = ref(storage, `userImages/${userId}/${Date.now()}`);
+        const storageRef = ref(storage, `userImages/${userId}`);
         await uploadBytes(storageRef, blob);
-        const userImageUrl = await getDownloadURL(storageRef);
-        console.log('Image uploaded to Firebase Storage:', userImageUrl);
-      }      
+        userImageUrl = await getDownloadURL(storageRef); // Get the image URL after upload
+      }
 
       await setDoc(userDocRef, {
         displayName,
         username,
         email,
         aboutMe,
-        bookshelfId,
-        role: 'porter',
+        birthDate: birthDate.toISOString(),
+        role: 'porter', // Set the role as 'porter'
         userImage: userImageUrl, // Save the image URL in Firestore
       });
 
@@ -79,6 +81,13 @@ export default function PorterSignUpScreen() {
     }
   };
 
+  const onChangeDate = (event, selectedDate) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setBirthDate(selectedDate);
+    }
+  };
+
   return (
     <View style={signUpStyles.container}>
       <SafeAreaView>
@@ -104,7 +113,7 @@ export default function PorterSignUpScreen() {
             <TextInput
               style={signUpStyles.textInput}
               value={displayName}
-              placeholder='Enter Name'
+              placeholder="Enter Name"
               onChangeText={(text) => setDisplayName(text)}
             />
           </View>
@@ -113,7 +122,7 @@ export default function PorterSignUpScreen() {
             <TextInput
               style={signUpStyles.textInput}
               value={username}
-              placeholder='Enter Username'
+              placeholder="Enter Username"
               onChangeText={(text) => setUsername(text)}
             />
           </View>
@@ -122,7 +131,7 @@ export default function PorterSignUpScreen() {
             <TextInput
               style={signUpStyles.textInput}
               value={email}
-              placeholder='Enter Email'
+              placeholder="Enter Email"
               onChangeText={(text) => setEmail(text)}
             />
           </View>
@@ -132,7 +141,7 @@ export default function PorterSignUpScreen() {
               style={signUpStyles.textInput}
               secureTextEntry
               value={password}
-              placeholder='Enter Password'
+              placeholder="Enter Password"
               onChangeText={(text) => setPassword(text)}
             />
           </View>
@@ -142,7 +151,7 @@ export default function PorterSignUpScreen() {
               style={signUpStyles.textInput}
               secureTextEntry
               value={passwordConfirm}
-              placeholder='Enter Password'
+              placeholder="Confirm Password"
               onChangeText={(text) => setPasswordConfirm(text)}
             />
           </View>
@@ -152,9 +161,33 @@ export default function PorterSignUpScreen() {
               style={[signUpStyles.textInput, { height: 80 }]}
               multiline={true}
               value={aboutMe}
-              placeholder='Enter detail'
+              placeholder="Enter detail"
               onChangeText={(text) => setAboutMe(text)}
             />
+          </View>
+          <View style={{ marginBottom: 20 }}>
+            <Text style={signUpStyles.inputLabel}>Birth Date</Text>
+            {Platform.OS === 'web' ? (
+              <DatePicker
+                selected={birthDate}
+                onChange={(date) => setBirthDate(date)}
+                maxDate={new Date()}
+                dateFormat="yyyy-MM-dd"
+              />
+            ) : (
+              <Pressable onPress={() => setShowDatePicker(true)}>
+                <Text>{birthDate.toDateString()}</Text>
+              </Pressable>
+            )}
+            {showDatePicker && (
+              <DateTimePicker
+                value={birthDate}
+                mode="date"
+                display="default"
+                onChange={onChangeDate}
+                maximumDate={new Date()}
+              />
+            )}
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
             <CheckBox value={termsAccepted} onValueChange={setTermsAccepted} />

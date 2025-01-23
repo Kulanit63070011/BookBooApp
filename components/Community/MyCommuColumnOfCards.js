@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
-const MyCommuColumnOfCards = ({ cards, onPress, onLeave, cardWidth, isOwner }) => {
+const MyCommuColumnOfCards = ({ cards, onPress, onLeave, cardWidth, isOwner, onEdit }) => {
   return (
     <View style={styles.container}>
       {cards.map((community, index) => (
@@ -10,15 +10,20 @@ const MyCommuColumnOfCards = ({ cards, onPress, onLeave, cardWidth, isOwner }) =
           <View style={[styles.cardContainer, { width: cardWidth }]}>
             <View style={styles.rowContainer}>
               <View style={styles.leftContainer}>
-                <Image source={require('../../assets/images/bookcover.png')} style={styles.image} />
+                {/* Use imageCommu or a fallback if it's missing */}
+                <Image
+                  source={{ uri: community.imageCommu || '../../assets/images/bookcover.png' }} // Fallback to default image
+                  style={styles.image}
+                />
               </View>
               <View style={styles.rightContainer}>
-                {/* ตำแหน่งสำหรับชื่อชุมชน */}
-                <Text style={styles.cardTitle}>{community.name.length > 30 ? community.name.substring(0, 30) + '...' : community.name}</Text>
+                <Text style={styles.cardTitle}>
+                  {community.name.length > 30 ? community.name.substring(0, 30) + '...' : community.name}
+                </Text>
               </View>
             </View>
             {isOwner(community) && (
-              <Pressable onPress={() => alert('Edit pressed for ' + community.name)} style={styles.leaveButton}>
+              <Pressable onPress={() => onEdit(community)} style={styles.leaveButton}>
                 <MaterialIcons name="edit" size={16} color="blue" />
               </Pressable>
             )}

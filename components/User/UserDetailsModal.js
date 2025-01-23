@@ -7,7 +7,6 @@ import { addDoc, collection } from 'firebase/firestore'; // เพิ่ม coll
 import { auth } from '../../backend/firebase';
 
 const UserDetailsModal = ({ visible, userDetails, onClose, partnerUid, handleCreateChatRoom }) => {
-  // โค้ดอื่น ๆ ที่ข้ามไป
   const handleChat = async () => {
     onClose();
     navigation.navigate('Chat', { userDetails });
@@ -21,14 +20,13 @@ const UserDetailsModal = ({ visible, userDetails, onClose, partnerUid, handleCre
     // Create chat room with the partnerUid
     handleCreateChatRoom(partnerUid);
   };
+  
   const navigation = useNavigation();
   const user = auth.currentUser;
 
-  if (!visible || !userDetails || !user) { // ตรวจสอบ user ด้วย
+  if (!visible || !userDetails || !user) { 
     return null;
   }
-
-  const { displayName, uid } = user;
 
   return (
     <Modal visible={visible} animationType="slide">
@@ -43,7 +41,7 @@ const UserDetailsModal = ({ visible, userDetails, onClose, partnerUid, handleCre
             <Text style={styles.label}>Name: {userDetails.displayName}</Text>
             <Text style={styles.label}>About Me: {userDetails.aboutMe}</Text>
             <View style={styles.imageContainer}>
-              <Image source={require('../../assets/images/human.png')} style={styles.profileImage} />
+              <Image source={{ uri: userDetails.userImage }} style={styles.profileImage} />
             </View>
           </View>
         </ScrollView>

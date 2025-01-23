@@ -1,15 +1,37 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, ScrollView, TouchableOpacity, Image, Alert, Pressable, StyleSheet } from "react-native";
-import { doc, setDoc, collection } from "firebase/firestore";
+import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db, storage } from "../../../backend/firebase";
 import * as ImagePicker from "expo-image-picker";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-const CreatePromotionScreen = () => {
+const EditPromotionScreen = ({ route, navigation }) => {
+  const { promotionId } = route.params; // Get promotion ID from navigation params
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [promotionImage, setPromotionImage] = useState(null);
   const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    const fetchPromotion = async () => {
+      try {
+        const docRef = doc(db, "promotions", promotionId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const promotionData = docSnap.data();
+          setTitle(promotionData.title);
+          setDescription(promotionData.description);
+          setPromotionImage(promotionData.promotionImage || null);
+        } else {
+          Alert.alert("Promotion not found");
+        }
+      } catch (error) {
+        console.error("Error fetching promotion:", error.message);
+      }
+    };
+
+    fetchPromotion();
+  }, [promotionId]);
 
   const pickPromotionImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -25,6 +47,8 @@ const CreatePromotionScreen = () => {
       quality: 1,
     });
 
+    console.log("Image Picker Result:", result); // Log the result
+
     if (!result.canceled) {
       setPromotionImage(result.assets[0].uri);
     }
@@ -32,53 +56,68 @@ const CreatePromotionScreen = () => {
 
   const uploadImage = async () => {
     if (!promotionImage) return null;
-
+  
     setUploading(true);
     try {
       const response = await fetch(promotionImage);
-      const blob = await response.blob();
-      const imageRef = ref(storage, `promotions/${Date.now()}`);
-      await uploadBytes(imageRef, blob);
-      const downloadURL = await getDownloadURL(imageRef);
+      const blob = await response.blob(); // Convert the file into a blob
+      const imageRef = ref(storage, `promotions/${Date.now()}`); // Use a unique path for each image
+      await uploadBytes(imageRef, blob); // Upload the image to Firebase Storage
+      const downloadURL = await getDownloadURL(imageRef); // Get the download URL after upload
       setUploading(false);
       return downloadURL;
     } catch (error) {
       setUploading(false);
       console.error("Error uploading image:", error.message);
+      Alert.alert("Error uploading image. Please try again.");
       return null;
     }
   };
+    
 
-  const createPromotion = async () => {
+  const updatePromotion = async () => {
     if (!title || !description) {
       Alert.alert("Please enter all required information");
       return;
     }
 
     try {
-      const imageUrl = await uploadImage(); // Upload image and get URL
+      // ใช้ภาพเดิมหากไม่มีการอัปโหลดใหม่
+      const imageUrl = promotionImage ? await uploadImage() : promotionImage;
+
+      // ตรวจสอบกรณีที่ promotionImage เป็น null
       const promotionData = {
         title,
         description,
-        promotionImage: imageUrl || null, // Save URL in Firestore
+        promotionImage: imageUrl || promotionImage, // ใช้ URL ของภาพเดิมหรือตั้งเป็น null หากไม่มีภาพ
       };
 
-      const promotionRef = doc(collection(db, "promotions"));
-      await setDoc(promotionRef, promotionData);
+      const promotionRef = doc(db, "promotions", promotionId);
+      await updateDoc(promotionRef, promotionData);
 
-      Alert.alert("Promotion created successfully!");
-      setTitle("");
-      setDescription("");
-      setPromotionImage(null);
+      Alert.alert("Promotion updated successfully!");
+      navigation.goBack(); // Go back to previous screen after update
     } catch (error) {
-      console.error("Error creating promotion:", error.message);
-      Alert.alert("Error creating promotion. Please try again.");
+      console.error("Error updating promotion:", error.message);
+      Alert.alert("Error updating promotion. Please try again.");
+    }
+  };
+
+  const deletePromotion = async () => {
+    try {
+      const promotionRef = doc(db, "promotions", promotionId);
+      await deleteDoc(promotionRef);
+      Alert.alert("Promotion deleted successfully!");
+      navigation.goBack(); // Go back to previous screen after deletion
+    } catch (error) {
+      console.error("Error deleting promotion:", error.message);
+      Alert.alert("Error deleting promotion. Please try again.");
     }
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Create New Promotion</Text>
+      <Text style={styles.title}>Edit Promotion</Text>
       <TextInput
         style={styles.input}
         placeholder="Title"
@@ -103,15 +142,18 @@ const CreatePromotionScreen = () => {
       </TouchableOpacity>
       <Pressable
         style={[
-          styles.createButton,
+          styles.updateButton,
           uploading ? { backgroundColor: "gray" } : {},
         ]}
-        onPress={createPromotion}
+        onPress={updatePromotion}
         disabled={uploading}
       >
         <Text style={styles.buttonText}>
-          {uploading ? "Uploading..." : "Create Promotion"}
+          {uploading ? "Uploading..." : "Update Promotion"}
         </Text>
+      </Pressable>
+      <Pressable style={styles.deleteButton} onPress={deletePromotion}>
+        <Text style={styles.buttonText}>Delete Promotion</Text>
       </Pressable>
     </ScrollView>
   );
@@ -138,7 +180,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginBottom: 20,
   },
-  createButton: {
+  updateButton: {
+    backgroundColor: "blue",
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  deleteButton: {
     backgroundColor: "red",
     paddingVertical: 12,
     paddingHorizontal: 40,
@@ -150,7 +199,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   imagePicker: {
-    width: 300, // Adjust width as needed
+    width: 300,
     height: 200,
     borderWidth: 1,
     borderColor: "#ccc",
@@ -158,7 +207,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 10,
-    overflow: "hidden", // Ensures image fits within the container
+    overflow: "hidden",
   },
   image: {
     width: "100%",
@@ -170,4 +219,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CreatePromotionScreen;
+export default EditPromotionScreen;

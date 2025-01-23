@@ -56,18 +56,18 @@ const PorterRequestModal = ({ visible, onClose, eventId }) => {
         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
           <Text style={styles.closeText}>✖</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>รายละเอียดการสมัคร</Text>
+        <Text style={styles.title}>Details of product delivery in this event</Text>
         <TextInput
           style={styles.input}
-          placeholder="กรุณากรอกรายละเอียด"
+          placeholder="Please fill in the details."
           value={requestDetails}
           onChangeText={setRequestDetails}
         />
         <View style={styles.checkboxContainer}>
           <CheckBox value={isConfirmed} onValueChange={setIsConfirmed} />
-          <Text>ยืนยันการสมัคร</Text>
+          <Text>Confirm your application</Text>
         </View>
-        <Button title="ส่งคำขอ" onPress={handleSubmitRequest} />
+        <Button title="Submit a request" onPress={handleSubmitRequest} />
       </View>
     </Modal>
   );

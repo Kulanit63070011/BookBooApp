@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+// SharedBookDetailsModal.js
+import React, { useState } from 'react';
 import { Modal, View, Text, Pressable, StyleSheet, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import UserDetailsModal from '../../User/UserDetailsModal';
-import { addDoc, collection, onSnapshot, query, orderBy, doc, updateDoc, getDocs, getDoc } from 'firebase/firestore';
+import { getDoc, doc } from 'firebase/firestore';
 import { db } from '../../../backend/firebase';
 
 const SharedBookDetailsModal = ({ visible, bookDetails, onClose }) => {
@@ -16,14 +17,10 @@ const SharedBookDetailsModal = ({ visible, bookDetails, onClose }) => {
     return null;
   }
 
-
-
   const handleSelectUser = async (userId) => {
     try {
       const userDoc = await getDoc(doc(db, 'users', userId));
       const userData = userDoc.data();
-      console.log(userData)
-      console.log(userId)
       setSelectedUser(userData);
       setPartnerUid(userId);
     } catch (error) {
@@ -42,25 +39,28 @@ const SharedBookDetailsModal = ({ visible, bookDetails, onClose }) => {
           <View style={styles.topBar}>
             <Text style={styles.modalTitle}>Book Details</Text>
             <Pressable onPress={onClose} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>Close</Text>
+              <MaterialIcons name="close" size={24} color="#333" />
             </Pressable>
-            {/* <Pressable>
-              <MaterialIcons name="edit" size={20} color="red" onPress={() => navigation.navigate('EditSharedBook', { bookDetails: bookDetails })} />
-            </Pressable> */}
           </View>
           <View style={styles.detailsContainer}>
             <Image
-              source={require('../../../assets/images/bookcover.png')}
+              source={{ uri: bookDetails.thumbnail }}
               style={styles.bookImage}
             />
-            <Text style={styles.detailText}>Title: {bookDetails.title}</Text>
-            <Text style={styles.detailText}>Author: {bookDetails.author}</Text>
-            <Text style={styles.detailText}>About Book: {bookDetails.aboutBook}</Text>
-            <Text style={styles.detailText}>Status: {bookDetails.status}</Text>
-            <Text style={styles.about} onPress={() => {
-              handleSelectUser(bookDetails.ownerSharedBook);
-              setUserDetailsModalVisible(true);
-            }}>CHAT</Text>
+            <Text style={styles.bookTitle}>{bookDetails.title}</Text>
+            <Text style={styles.bookAuthor}>by {bookDetails.author}</Text>
+            <Text style={styles.sectionTitle}>About the Book</Text>
+            <Text style={styles.detailText}>{bookDetails.aboutBook}</Text>
+            <Text style={styles.statusText}>Detail: {bookDetails.detailSharedBook}</Text>
+            <Pressable
+              style={styles.chatButton}
+              onPress={() => {
+                handleSelectUser(bookDetails.ownerSharedBook);
+                setUserDetailsModalVisible(true);
+              }}
+            >
+              <Text style={styles.chatButtonText}>Chat with Owner</Text>
+            </Pressable>
           </View>
         </View>
       </View>
@@ -80,41 +80,86 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
   },
   modalContent: {
-    backgroundColor: 'white',
-    borderRadius: 10,
+    backgroundColor: '#fff',
+    borderRadius: 15,
     padding: 20,
-    width: '80%',
+    width: '85%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
   topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    alignItems: 'center',
+    marginBottom: 10,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
+    color: '#333',
   },
   closeButton: {
-    padding: 10,
-  },
-  closeButtonText: {
-    color: 'blue',
+    padding: 5,
   },
   detailsContainer: {
-    marginTop: 10,
-    alignItems: 'center', // จัดวางภาพและข้อความตรงกลาง
+    alignItems: 'center',
   },
   bookImage: {
-    width: 100,
-    height: 150,
-    marginBottom: 10,
-    borderRadius: 5,
+    width: 120,
+    height: 180,
+    borderRadius: 8,
+    marginBottom: 15,
+  },
+  bookTitle: {
+    fontSize: 20,
+    fontWeight: 600,
+    color: '#333',
+    marginBottom: 5,
+    textAlign: 'center',
+  },
+  bookAuthor: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 15,
+    fontStyle: 'italic',
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 500,
+    color: '#555',
+    marginTop: 10,
+    marginBottom: 5,
   },
   detailText: {
-    marginBottom: 10,
+    fontSize: 14,
+    color: '#555',
+    textAlign: 'justify',
+    marginBottom: 15,
+    paddingHorizontal: 10,
+  },
+  statusText: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: 500,
+    marginBottom: 15,
+  },
+  chatButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  chatButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 500,
   },
 });
 

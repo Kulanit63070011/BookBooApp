@@ -1,39 +1,44 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, Pressable, StyleSheet, Image, Picker, Alert } from 'react-native';
 import { doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../backend/firebase';
 
 const EditSharedBookScreen = ({ route, navigation }) => {
   const { bookDetails } = route.params;
-  const [editedTitle, setEditedTitle] = useState(bookDetails.title);
-  const [editedAuthor, setEditedAuthor] = useState(bookDetails.author);
-  const [editedAboutBook, setEditedAboutBook] = useState(bookDetails.aboutBook);
-  const [editedStatus, setEditedStatus] = useState(bookDetails.status);
+  const [editedDetailSharedBook, setEditedDetailSharedBook] = useState(bookDetails.detailSharedBook);
+  const [selectedCategory, setSelectedCategory] = useState(bookDetails.category);
+
+  const categories = [
+    'General novels', 'Romantic novels', 'Fantasy novels', 'Sci-fi novels',
+    'Adventure novels', 'Detective novels', 'Horror novels', 'Serial novels',
+    'Cartoons & Anime', 'Finance and Investment', 'Market Accounting', 'Psychology', 'Self-Development',
+    'Education', 'Language', 'Law', 'Creative Design', 'Politics', 'Computer Science',
+    'History', 'Religious Beliefs', 'Pets', 'Health', 'Travel', 'Music and Entertainment',
+    'Food', 'Art', 'Others'
+  ];
 
   const saveChanges = async () => {
     try {
-      // ตรวจสอบข้อมูลที่จำเป็น
-      if (!editedTitle || !editedAuthor || !editedAboutBook || !editedStatus) {
-        console.error('Please enter all required information');
+      if (!editedDetailSharedBook || !selectedCategory) {
+        console.error('Please complete the required fields');
         return;
       }
 
-      // ข้อมูลที่จะเขียนลงใน Firestore
       const editedBookData = {
-        title: editedTitle,
-        author: editedAuthor,
-        aboutBook: editedAboutBook,
-        status: editedStatus,
-        ownerSharedBook: bookDetails.ownerSharedBook, // เพิ่มข้อมูล ownerSharedBook กลับเข้าไป
+        book_id: bookDetails.book_id,
+        title: bookDetails.title,
+        author: bookDetails.author,
+        aboutBook: bookDetails.aboutBook,
+        detailSharedBook: editedDetailSharedBook,
+        category: selectedCategory,
+        ownerSharedBook: bookDetails.ownerSharedBook,
+        thumbnail: bookDetails.thumbnail,
       };
 
-      // เขียนข้อมูลลงใน Firestore
-      const docRef = doc(db, 'sharedBooks', bookDetails.id); // ใช้ ID ของหนังสือเป็น document ID
+      const docRef = doc(db, 'sharedBooks', bookDetails.id);
       await setDoc(docRef, editedBookData);
-
       console.log('Book details updated successfully:', editedBookData);
 
-      // กลับไปยังหน้าหลักหลังจากบันทึกสำเร็จ
       navigation.goBack();
     } catch (error) {
       console.error('Error updating book details:', error.message);
@@ -41,76 +46,57 @@ const EditSharedBookScreen = ({ route, navigation }) => {
   };
 
   const deleteBook = async () => {
-    alert('delete book section')
     try {
-      // ลบข้อมูลหนังสือ
+      console.log('Deleting book:', bookDetails.id);  // Add this log for debugging
       const docRef = doc(db, 'sharedBooks', bookDetails.id);
-      await deleteDoc(docRef);
-    
+      await deleteDoc(docRef);  // Delete the document
       console.log('Book deleted successfully');
-    
-      // กลับไปยังหน้าหลักหลังจากลบสำเร็จ
-      navigation.goBack();
+      navigation.goBack();  // Go back after deleting
     } catch (error) {
       console.error('Error deleting book:', error.message);
     }
   };
-  
-  const confirmDelete = () => {
-    Alert.alert(
-      'Delete Book',
-      'Are you sure you want to delete this book?',
-      [
-        {
-          text: 'Cancel',
-          onPress: () => console.log('Cancel Pressed'),
-          style: 'cancel'
-        },
-        { text: 'OK', onPress: deleteBook }
-      ],
-      { cancelable: false }
-    );
-  };  
 
-  // เรียกใช้งาน useEffect เมื่อ bookDetails มีการเปลี่ยนแปลง (หลังจากการลบหนังสือที่แชร์)
+
   useEffect(() => {
-    setEditedTitle(bookDetails.title);
-    setEditedAuthor(bookDetails.author);
-    setEditedAboutBook(bookDetails.aboutBook);
-    setEditedStatus(bookDetails.status);
+    setEditedDetailSharedBook(bookDetails.detailSharedBook);
+    setSelectedCategory(bookDetails.category);
   }, [bookDetails]);
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Edit Shared Book</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Book Title"
-        value={editedTitle}
-        onChangeText={setEditedTitle}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Author"
-        value={editedAuthor}
-        onChangeText={setEditedAuthor}
-      />
+
+      <Image source={{ uri: bookDetails.thumbnail }} style={styles.thumbnail} />
+
+      <Text style={styles.text}>Title: {bookDetails.title}</Text>
+      <Text style={styles.text}>Author: {bookDetails.author}</Text>
+      <Text style={styles.text}>About the Book: {bookDetails.aboutBook}</Text>
+
       <TextInput
         style={[styles.input, { height: 100 }]}
-        placeholder="About Book"
+        placeholder="Detail about Shared Book"
         multiline={true}
-        value={editedAboutBook}
-        onChangeText={setEditedAboutBook}
+        value={editedDetailSharedBook}
+        onChangeText={setEditedDetailSharedBook}
       />
-      <TextInput
-        style={styles.input}
-        placeholder="Status"
-        value={editedStatus}
-        onChangeText={setEditedStatus}
-      />
+
+      <Text style={styles.label}>Select Book Category:</Text>
+      <Picker
+        selectedValue={selectedCategory}
+        onValueChange={(itemValue) => setSelectedCategory(itemValue)}
+        style={styles.picker}
+      >
+        <Picker.Item label="Select a category" value="" />
+        {categories.map((category, index) => (
+          <Picker.Item label={category} value={category} key={index} />
+        ))}
+      </Picker>
+
       <Pressable style={styles.saveButton} onPress={saveChanges}>
         <Text style={styles.buttonText}>Save Changes</Text>
       </Pressable>
+
       <Pressable style={styles.deleteButton} onPress={deleteBook}>
         <Text style={styles.buttonText}>Delete Book</Text>
       </Pressable>
@@ -130,6 +116,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
   },
+  text: {
+    fontSize: 16,
+    marginBottom: 10,
+    color: '#555',
+  },
   input: {
     width: '100%',
     height: 40,
@@ -147,15 +138,37 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   deleteButton: {
-    backgroundColor: 'red',
+    backgroundColor: '#dc3545',
     paddingVertical: 12,
     paddingHorizontal: 40,
     borderRadius: 10,
+    marginBottom: 20,
   },
   buttonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  thumbnail: {
+    width: 100,
+    height: 150,
+    marginBottom: 20,
+    resizeMode: 'contain',
+  },
+  picker: {
+    width: '100%',
+    height: 50,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    backgroundColor: 'white',
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#555',
+    marginBottom: 8,
   },
 });
 

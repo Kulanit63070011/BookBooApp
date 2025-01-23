@@ -44,7 +44,6 @@ const MyBookShelfScreen = () => {
     }
   }, [isFocused]);
 
-
   const deleteBook = () => {
     setIsModalVisible(false);
   };
@@ -53,7 +52,7 @@ const MyBookShelfScreen = () => {
     setSelectedBook(book);
     setIsModalVisible(true);
     console.log(book);  // ตรวจสอบว่า selectedBook ได้รับข้อมูลจากการคลิกถูกต้องหรือไม่
-  };  
+  };
 
   const saveBookChanges = async (updatedDetails, bookId) => {
     try {
@@ -75,7 +74,6 @@ const MyBookShelfScreen = () => {
       throw error;
     }
   };
-  
 
   return (
     <View style={signUpStyles.container}>

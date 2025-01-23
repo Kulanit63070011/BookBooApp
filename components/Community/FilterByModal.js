@@ -22,16 +22,7 @@ const FilterByPopup = () => {
         { category: 'Detective novels' },
         { category: 'Horror novels' },
         { category: 'Serial novels' },
-
-        { category: 'General cartoons' },
-        { category: 'Romantic cartoons' },
-        { category: 'Fantasy cartoons' },
-        { category: 'Sci-fi cartoons' },
-        { category: 'Adventure cartoons' },
-        { category: 'Detective cartoons' },
-        { category: 'Horror cartoons' },
-        { category: 'Serial cartoons' },
-
+        { category: 'Cartoons & Anime' },
         { category: 'Finance and Investment' },
         { category: 'Market Accounting' },
         { category: 'Psychology' },

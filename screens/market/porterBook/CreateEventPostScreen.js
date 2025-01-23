@@ -1,20 +1,12 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  Button,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Platform,
-  Image,
-} from "react-native";
+import { View, Text, TextInput, Button, StyleSheet, ScrollView, TouchableOpacity, Platform, Image } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { collection, addDoc } from "firebase/firestore";
-import { db, auth, storage } from "../../../backend/firebase"; // Add storage import
+import { db, auth, storage } from "../../../backend/firebase";
 import * as ImagePicker from "expo-image-picker";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Firebase Storage functions
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import DatePicker from "react-datepicker"; // For web
+import "react-datepicker/dist/react-datepicker.css"; // Import DatePicker styles
 
 const CreateEventPostScreen = () => {
   const [title, setTitle] = useState("");
@@ -23,12 +15,12 @@ const CreateEventPostScreen = () => {
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [about, setAbout] = useState("");
-  const [items, setItems] = useState([{ name: "", price: "", image: null }]); // State for items with image
-  const [eventImage, setEventImage] = useState(null); // State for event image
+  const [items, setItems] = useState([{ name: "", price: "", image: null }]);
+  const [eventImage, setEventImage] = useState(null);
 
   const handleAddItem = () => {
     if (items.length < 10) {
-      setItems([...items, { name: "", price: "", image: null }]); // Include image for each item
+      setItems([...items, { name: "", price: "", image: null }]);
     }
   };
 
@@ -38,11 +30,10 @@ const CreateEventPostScreen = () => {
     setItems(newItems);
   };
 
-  // Function to upload an image to Firebase Storage
   const uploadImage = async (uri, path) => {
     const response = await fetch(uri);
     const blob = await response.blob();
-    const fileRef = ref(storage, path); // Generate a path for the image in Firebase Storage
+    const fileRef = ref(storage, path);
     await uploadBytes(fileRef, blob);
     const downloadURL = await getDownloadURL(fileRef);
     return downloadURL;
@@ -51,8 +42,6 @@ const CreateEventPostScreen = () => {
   const handleSubmit = async () => {
     try {
       const userId = auth.currentUser.uid;
-
-      // Create event data
       const eventData = {
         title,
         startDate: startDate.toISOString(),
@@ -61,34 +50,22 @@ const CreateEventPostScreen = () => {
         createdBy: userId,
       };
 
-      // Upload event image to Firebase Storage if exists
       let eventImageUrl = null;
       if (eventImage) {
-        eventImageUrl = await uploadImage(
-          eventImage,
-          `eventImages/${userId}/${Date.now()}`
-        );
+        eventImageUrl = await uploadImage(eventImage, `eventImages/${userId}/${Date.now()}`);
       }
 
-      // Add event document to Firestore
       const eventDocRef = await addDoc(collection(db, "events"), {
         ...eventData,
         eventImage: eventImageUrl,
       });
 
-      // Add items to the items collection
       for (const item of items) {
         if (item.name && item.price) {
-          // Only add items that have a name and price
           let itemImageUrl = null;
           if (item.image) {
-            // Upload item image if exists
-            itemImageUrl = await uploadImage(
-              item.image,
-              `itemImages/${userId}/${Date.now()}`
-            );
+            itemImageUrl = await uploadImage(item.image, `itemImages/${userId}/${Date.now()}`);
           }
-          // Add item document to items subcollection
           await addDoc(collection(db, `events/${eventDocRef.id}/items`), {
             name: item.name,
             price: item.price,
@@ -102,30 +79,20 @@ const CreateEventPostScreen = () => {
       setStartDate(new Date());
       setEndDate(new Date());
       setAbout("");
-      setItems([{ name: "", price: "", image: null }]); // Reset items
-      setEventImage(null); // Reset the event image
+      setItems([{ name: "", price: "", image: null }]);
+      setEventImage(null);
     } catch (error) {
       console.error("Error creating event post:", error.message);
     }
   };
 
-  const renderDatePicker = (
-    date,
-    setDate,
-    showDatePicker,
-    setShowDatePicker
-  ) => {
+  const renderDatePicker = (date, setDate, showDatePicker, setShowDatePicker, field) => {
     return Platform.OS === "web" ? (
-      <TextInput
-        style={styles.input}
-        placeholder="YYYY-MM-DD"
-        value={date.toISOString().split("T")[0]}
-        onChange={(e) => {
-          const inputDate = e.target.value;
-          if (/^\d{4}-\d{2}-\d{2}$/.test(inputDate)) {
-            setDate(new Date(inputDate));
-          }
-        }}
+      <DatePicker
+        selected={date}
+        onChange={(date) => setDate(date)}
+        dateFormat="yyyy-MM-dd"
+        className="custom-datepicker"
       />
     ) : (
       <>
@@ -133,7 +100,13 @@ const CreateEventPostScreen = () => {
           <TextInput
             style={styles.input}
             value={date.toLocaleDateString()}
-            editable={false}
+            editable={true}  // Allow editing of the date manually
+            onChangeText={(text) => {
+              const inputDate = new Date(text);
+              if (!isNaN(inputDate.getTime())) {
+                setDate(inputDate);
+              }
+            }}
           />
         </TouchableOpacity>
         {showDatePicker && (
@@ -152,9 +125,7 @@ const CreateEventPostScreen = () => {
   };
 
   const pickEventImage = async () => {
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
-
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (permissionResult.granted === false) {
       alert("Permission to access camera roll is required!");
       return;
@@ -173,9 +144,7 @@ const CreateEventPostScreen = () => {
   };
 
   const pickItemImage = async (index) => {
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
-
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (permissionResult.granted === false) {
       alert("Permission to access camera roll is required!");
       return;
@@ -200,44 +169,32 @@ const CreateEventPostScreen = () => {
       <Text style={styles.title}>Create Event Post for Porter</Text>
       <TextInput
         style={styles.input}
-        placeholder="Title"
+        placeholder="Event Title"
         value={title}
         onChangeText={setTitle}
       />
 
-      <Text>Start Date</Text>
-      {renderDatePicker(
-        startDate,
-        setStartDate,
-        showStartDatePicker,
-        setShowStartDatePicker
-      )}
+      <Text style={styles.label}>Start Date</Text>
+      {renderDatePicker(startDate, setStartDate, showStartDatePicker, setShowStartDatePicker, 'start')}
 
-      <Text>End Date</Text>
-      {renderDatePicker(
-        endDate,
-        setEndDate,
-        showEndDatePicker,
-        setShowEndDatePicker
-      )}
+      <Text style={styles.label}>End Date</Text>
+      {renderDatePicker(endDate, setEndDate, showEndDatePicker, setShowEndDatePicker, 'end')}
 
       <TextInput
         style={[styles.input, { height: 100 }]}
-        placeholder="About"
+        placeholder="Event Description"
         multiline={true}
         value={about}
         onChangeText={setAbout}
       />
 
-      {/* Event Image Picker Section */}
+      {/* Event Image Picker */}
       <TouchableOpacity onPress={pickEventImage}>
         <View style={styles.imagePicker}>
           {eventImage ? (
             <Image source={{ uri: eventImage }} style={styles.image} />
           ) : (
-            <Text style={styles.imagePlaceholder}>
-              Tap to select event image
-            </Text>
+            <Text style={styles.imagePlaceholder}>Select Event Image</Text>
           )}
         </View>
       </TouchableOpacity>
@@ -245,7 +202,7 @@ const CreateEventPostScreen = () => {
       <Text style={styles.sectionTitle}>Items for Porter</Text>
       {items.map((item, index) => (
         <View key={index} style={styles.itemContainer}>
-          <Text style={styles.itemTitle}>Porter Item {index + 1} of 10</Text>
+          <Text style={styles.itemTitle}>Item {index + 1}</Text>
           <TextInput
             style={styles.itemInput}
             placeholder="Item Name"
@@ -259,26 +216,25 @@ const CreateEventPostScreen = () => {
             value={item.price}
             onChangeText={(value) => handleItemChange(index, "price", value)}
           />
-          {/* Item Image Picker Section */}
           <TouchableOpacity onPress={() => pickItemImage(index)}>
             <View style={styles.imagePicker}>
               {item.image ? (
                 <Image source={{ uri: item.image }} style={styles.image} />
               ) : (
-                <Text style={styles.imagePlaceholder}>
-                  Tap to select item image
-                </Text>
+                <Text style={styles.imagePlaceholder}>Select Item Image</Text>
               )}
             </View>
           </TouchableOpacity>
         </View>
       ))}
-      <Button
-        title="Add Item"
-        onPress={handleAddItem}
-        disabled={items.length >= 10}
-      />
-      <Button title="Submit" onPress={handleSubmit} />
+
+      <TouchableOpacity style={styles.button} onPress={handleAddItem}>
+        <Text style={styles.buttonText}>Add Item</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+        <Text style={styles.buttonText}>Submit Event</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 };
@@ -287,57 +243,84 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 20,
+    backgroundColor: "#f9f9f9",
   },
   title: {
-    fontSize: 20,
-    fontWeight: "bold",
+    fontSize: 26,
+    fontWeight: "700",
     marginBottom: 20,
+    color: "#333",
+  },
+  label: {
+    fontSize: 16,
+    marginVertical: 5,
+    color: "#555",
   },
   input: {
     width: "100%",
-    padding: 10,
-    marginBottom: 10,
+    padding: 12,
+    marginBottom: 15,
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
+    borderColor: "#ddd",
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    fontSize: 16,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
+    fontSize: 22,
+    fontWeight: "600",
+    marginVertical: 15,
+    color: "#444",
   },
   itemContainer: {
     marginBottom: 20,
   },
   itemTitle: {
-    fontWeight: "bold",
-    marginBottom: 5,
+    fontSize: 18,
+    fontWeight: "500",
+    color: "#555",
   },
   itemInput: {
     width: "100%",
-    padding: 10,
-    marginBottom: 10,
+    padding: 12,
+    marginVertical: 5,
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    backgroundColor: "#fff",
+    fontSize: 16,
   },
   imagePicker: {
     width: "100%",
     height: 200,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
+    borderRadius: 12,
+    backgroundColor: "#eee",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 10,
+    marginVertical: 15,
   },
   image: {
     width: "100%",
     height: "100%",
-    borderRadius: 5,
+    borderRadius: 12,
+    resizeMode: "cover",
   },
   imagePlaceholder: {
     color: "#888",
+    fontSize: 16,
+  },
+  button: {
+    backgroundColor: "#007bff",
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+    marginVertical: 10,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 18,
+    textAlign: "center",
+    fontWeight: "600",
   },
 });
 

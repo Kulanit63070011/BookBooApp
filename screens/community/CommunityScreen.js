@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { addDoc, collection, onSnapshot, query, orderBy, doc, updateDoc, getDocs, getDoc } from 'firebase/firestore';
 import { auth, db } from '../../backend/firebase';
@@ -23,6 +23,21 @@ const CommunityScreen = ({ route }) => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [isUserDetailsModalVisible, setUserDetailsModalVisible] = useState(false);
     const [partnerUid, setPartnerUid] = useState(null);
+    const [userProfiles, setUserProfiles] = useState({});
+
+    // ฟังก์ชันในการแปลง timestamp เป็นวันที่
+    const formatDate = (timestamp) => {
+        const date = new Date(timestamp.seconds * 1000); // ใช้ seconds จาก timestamp
+        return date.toLocaleString('en-US', { // ปรับรูปแบบวันที่
+            weekday: 'short',
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true,
+        });
+    };
 
     useEffect(() => {
         const { communityId } = route.params;
@@ -40,8 +55,23 @@ const CommunityScreen = ({ route }) => {
                     orderBy('createdDate', 'desc')
                 );
 
-                const unsubscribe = onSnapshot(postsQuery, (snapshot) => {
+                const unsubscribe = onSnapshot(postsQuery, async (snapshot) => {
                     const postList = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+                    // Pre-fetch user data for all posts
+                    const userIds = postList.map(post => post.createdBy);
+                    const userDataPromises = userIds.map(userId =>
+                        getDoc(doc(db, 'users', userId))
+                            .then(userDoc => ({ userId, data: userDoc.data() }))
+                    );
+                    const userDataResults = await Promise.all(userDataPromises);
+
+                    const userProfilesData = userDataResults.reduce((acc, { userId, data }) => {
+                        acc[userId] = data;
+                        return acc;
+                    }, {});
+
+                    setUserProfiles(userProfilesData);
                     setPosts(postList);
                 });
 
@@ -55,7 +85,6 @@ const CommunityScreen = ({ route }) => {
     const handleCreatePost = async (newPost) => {
         try {
             const user = auth.currentUser;
-
             if (!user) {
                 alert('User not authenticated.');
                 return;
@@ -72,6 +101,7 @@ const CommunityScreen = ({ route }) => {
                 createdDate: new Date(),
                 likes: 0,
                 dislikes: 0,
+                postImage: newPost.postImage || null, // Include the image URL
             });
 
             setCreatePostModalVisible(false);
@@ -189,16 +219,27 @@ const CommunityScreen = ({ route }) => {
         try {
             const userDoc = await getDoc(doc(db, 'users', userId));
             const userData = userDoc.data();
-            setSelectedUser(userData);
-            setPartnerUid(userId);
+            // สมมติว่า 'userProfile' เป็น URL ของรูปภาพผู้ใช้
+            setSelectedUser(userData);  // เก็บข้อมูล userData ที่ได้จาก 'users'
+            setPartnerUid(userId); // เก็บ userId เพื่อนำไปใช้งาน
         } catch (error) {
             console.error('Error fetching user data:', error.message);
         }
     };
 
     const handleCreateChatRoom = (partnerUid) => {
-        navigation.navigate('Chat', { partnerId: partnerUid });
-    };    
+        try {
+            setUserDetailsModalVisible(false);
+            navigation.navigate('Chat', { partnerId: partnerUid });
+        } catch (error) {
+            console.error('Error navigating to chat:', error);
+        }
+    };
+
+    const handleOpenEditModal = (post) => {
+        setSelectedPost(post); // Pass the selected post's data
+        setEditPostModalVisible(true);
+    };
 
     return (
         <View style={communityStyles.container}>
@@ -206,8 +247,8 @@ const CommunityScreen = ({ route }) => {
                 <Text style={communityStyles.postInput} numberOfLines={1} ellipsizeMode="tail">
                     What's on your mind?
                 </Text>
-                <Pressable onPress={() => setCreatePostModalVisible(true)}>
-                    <Text>Create Post</Text>
+                <Pressable style={communityStyles.createPostButton} onPress={() => setCreatePostModalVisible(true)}>
+                    <Text style={communityStyles.createPostButtonText}>Create Post</Text>
                 </Pressable>
                 <Pressable style={communityStyles.createCalendarButton} onPress={() => handleCreateCalendar()}>
                     <Text style={communityStyles.createCalendarButtonText}>Create Calendar</Text>
@@ -222,34 +263,41 @@ const CommunityScreen = ({ route }) => {
                     <Pressable
                         key={post.id}
                         style={communityStyles.postContainer}
-                        onPress={() => {
-                            setSelectedPostDetails(post);
-                            refreshPostData();
-                        }}
+                        onPress={() => { setSelectedPostDetails(post); refreshPostData(); }}
                     >
-                        <View>
-                            <Text
-                                style={communityStyles.postTitle}
-                                onPress={() => {
-                                    handleSelectUser(post.createdBy);
-                                    setUserDetailsModalVisible(true);
-                                }}
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <Pressable
+                                style={{ flexDirection: 'row', alignItems: 'center' }}
+                                onPress={() => { handleSelectUser(post.createdBy); setUserDetailsModalVisible(true); }}
                             >
-                                {post.createdByName}
-                            </Text>
-                            {auth.currentUser.uid === post.createdBy && (
-                                <Pressable
-                                    onPress={() => {
-                                        setSelectedPostId(post.id);
-                                        setEditedPostContent(post.content);
-                                        setEditPostModalVisible(true);
-                                    }}
-                                    style={communityStyles.editButton}>
-                                    <MaterialIcons name="edit" size={20} color="red" />
-                                </Pressable>
-                            )}
+                                <Image
+                                    source={{ uri: userProfiles[post.createdBy]?.userImage || 'default_image_url' }}
+                                    style={communityStyles.profileImage}
+                                />
+                                <Text style={communityStyles.postTitle}>
+                                    {post.createdByName}
+                                </Text>
+                            </Pressable>
                         </View>
+
+                        {/* Date displayed under the user's name */}
+                        <Text style={communityStyles.postDate}>
+                            {formatDate(post.createdDate)} {/* Show the date */}
+                        </Text>
+                        <Text style={communityStyles.postTitle}>{post.title}</Text>
                         <Text>{post.content}</Text>
+
+                        {/* Only display image if the post has a postImage */}
+                        {post.postImage ? (
+                            <Image
+                                source={{ uri: post.postImage }}
+                                style={communityStyles.postImage}
+                            />
+                        ) : (
+                            <View style={communityStyles.noImagePlaceholder}>
+                            </View>
+                        )}
+
                         <View style={communityStyles.likeDislikeContainer}>
                             <Pressable onPress={() => handleLikePost(post.id, true)} style={communityStyles.likeButton}>
                                 <MaterialIcons name="thumb-up" size={20} color="green" />
@@ -259,11 +307,23 @@ const CommunityScreen = ({ route }) => {
                                 <MaterialIcons name="thumb-down" size={20} color="red" />
                                 <Text style={communityStyles.likeDislikeText}>{post.dislikes} Dislikes</Text>
                             </Pressable>
+                            <Pressable onPress={() => { setSelectedPostDetails(post); refreshPostData(); }} style={[communityStyles.dislikeButton, { backgroundColor: '#e1e0dd' }]}>
+                                <Text style={communityStyles.likeDislikeText}>Comments</Text>
+                            </Pressable>
                         </View>
+
+                        {/* เพิ่มปุ่มแก้ไข */}
+                        {post.createdBy === auth.currentUser?.uid && (
+                            <Pressable
+                                style={communityStyles.editButton}
+                                onPress={() => handleOpenEditModal(post)}
+                            >
+                                <MaterialIcons name="edit" size={24} color="blue" />
+                            </Pressable>
+                        )}
                     </Pressable>
                 ))}
             </ScrollView>
-
             <CreatePostCommunityModal
                 visible={isCreatePostModalVisible}
                 onClose={() => setCreatePostModalVisible(false)}
@@ -272,10 +332,9 @@ const CommunityScreen = ({ route }) => {
             <EditPostCommunityModal
                 visible={isEditPostModalVisible}
                 onClose={() => setEditPostModalVisible(false)}
-                post={posts.find(post => post.id === selectedPostId)}
+                post={selectedPost}
                 communityId={communityId}
                 handleEditPost={handleEditPost}
-                editedPostContent={editedPostContent}
             />
             <PostDetailsModal
                 visible={!!selectedPostDetails}

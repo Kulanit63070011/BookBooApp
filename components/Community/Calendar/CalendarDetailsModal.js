@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, View, Text, Pressable, StyleSheet } from 'react-native';
+import { Modal, View, Text, Pressable, StyleSheet, Image, ScrollView } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
 const CalendarDetailsModal = ({ isVisible, onClose, event }) => {
@@ -17,16 +17,29 @@ const CalendarDetailsModal = ({ isVisible, onClose, event }) => {
               <MaterialIcons name="close" size={30} color="white" />
             </Pressable>
           </View>
-          <View style={styles.detailsContainer}>
-            <Text style={styles.label}>ชื่อกิจกรรม:</Text>
-            <Text style={styles.value}>{event.name}</Text>
-            <Text style={styles.label}>วันที่เริ่ม:</Text>
-            <Text style={styles.value}>{event.startDate}</Text>
-            <Text style={styles.label}>เวลาเริ่ม:</Text>
-            <Text style={styles.value}>{event.startTime}</Text>
-            <Text style={styles.label}>รายละเอียด:</Text>
-            <Text style={styles.value}>{event.description}</Text>
-          </View>
+          <ScrollView contentContainerStyle={styles.detailsContainer}>
+            {/* Display Event Image */}
+            {event.coverImage ? (
+              <Image source={{ uri: event.coverImage }} style={styles.eventImage} />
+            ) : (
+              <View style={styles.noImageContainer}>
+                <Text>No Image Available</Text>
+              </View>
+            )}
+
+            {/* Display Event Details */}
+            <Text style={styles.label}>Event Name:</Text>
+            <Text style={styles.value}>{event.name || 'No Name Available'}</Text>
+
+            <Text style={styles.label}>Start Date & Time:</Text>
+            <Text style={styles.value}>{event.startDateTime || 'No Start Date'}</Text>
+
+            <Text style={styles.label}>Reminder Date & Time:</Text>
+            <Text style={styles.value}>{event.reminderDateTime || 'No Reminder Date'}</Text>
+
+            <Text style={styles.label}>Description:</Text>
+            <Text style={styles.value}>{event.description || 'No Description Available'}</Text>
+          </ScrollView>
         </View>
       </View>
     </Modal>
@@ -43,32 +56,51 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: 'white',
     padding: 20,
-    borderRadius: 10,
-    elevation: 5,
+    borderRadius: 15,
+    elevation: 10,
+    width: '90%',
+    maxWidth: 400,
+    maxHeight: '90%',
   },
   topBar: {
-    padding: 20,
+    paddingBottom: 10,
     flexDirection: 'row',
     justifyContent: 'flex-end',
   },
   closeButton: {
-    backgroundColor: 'blue',
+    backgroundColor: 'red',
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 30,
   },
   detailsContainer: {
-    marginBottom: 20,
+    marginTop: 10,
   },
   label: {
     marginBottom: 5,
     fontSize: 16,
-    fontWeight: 'bold',
-    color: 'black',
+    fontWeight: '600',
+    color: '#333',
   },
   value: {
-    marginBottom: 10,
+    marginBottom: 15,
     fontSize: 16,
-    color: 'black',
+    color: '#555',
+    lineHeight: 22,
+  },
+  eventImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 15,
+  },
+  noImageContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ddd',
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 15,
   },
 });
 

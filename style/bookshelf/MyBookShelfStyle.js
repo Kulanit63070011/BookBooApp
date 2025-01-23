@@ -60,7 +60,7 @@ export const myBookShelfStyles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
-    backgroundColor: '#F1F1EE',
+    backgroundColor: 'white',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
   },

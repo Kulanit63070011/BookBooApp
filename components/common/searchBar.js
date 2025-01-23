@@ -8,7 +8,7 @@ const SearchBar = ({ value, onChange, onSearch }) => {
     <View style={allCommunityStyles.bookInputContainer}>
       <TextInput
         style={allCommunityStyles.input}
-        placeholder="Community Name"
+        placeholder="Searching"
         value={value}
         onChangeText={onChange}
       />

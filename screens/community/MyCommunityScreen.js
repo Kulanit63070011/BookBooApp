@@ -74,6 +74,10 @@ const MyCommunityScreen = () => {
     }
   };
 
+  const openCommunityEditScreen = (community) => {
+    navigation.navigate('EditCommunity', { communityDetails: community });
+  };
+
   return (
     <View style={signUpStyles.container}>
       <SafeAreaView>
@@ -97,6 +101,7 @@ const MyCommunityScreen = () => {
                 onLeave={(community) => leaveCommunity(community)}
                 cardWidth={170}
                 isOwner={isOwner}
+                onEdit={(community) => openCommunityEditScreen(community)} // เพิ่ม onEdit
               />
             ) : (
               <Text>No communities available</Text>

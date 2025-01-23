@@ -26,6 +26,7 @@ import CreateSharedBookScreen from "../screens/market/sharedBook/CreateSharedBoo
 import EditSharedBookScreen from "../screens/market/sharedBook/EditSharedBookScreen";
 import PromotionScreen from "../screens/market/promotion/PromotionScreen";
 import CreatePromotionScreen from "../screens/market/promotion/CreatePromotionScreen";
+import EditPromotionScreen from "../screens/market/promotion/EditPromotionScreen";
 import CreateEventPostScreen from "../screens/market/porterBook/CreateEventPostScreen";
 import AllPorterBookScreen from "../screens/market/porterBook/AllPorterBookScreen";
 import CommunityRecommendationScreen from "../screens/community/CommunityRecommendationScreen";
@@ -176,6 +177,11 @@ const AppNavigation = () => {
           name="CreatePromotion"
           options={{ headerShown: true }}
           component={CreatePromotionScreen}
+        />
+        <Stack.Screen
+          name="EditPromotion"
+          options={{ headerShown: true }}
+          component={EditPromotionScreen}
         />
         <Stack.Screen
           name="Promotion"

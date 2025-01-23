@@ -1,14 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  Image,
-  SafeAreaView,
-  Pressable,
-} from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, SafeAreaView, Pressable, } from "react-native";
 import BottomNavigator from "../../../navigation/BottomNavigator";
 import FloatingButton from "../../../components/common/FloatingAddButton";
 import { signUpStyles } from "../../../style/user/SignUpStyle";
@@ -67,8 +58,9 @@ const AllPorterBookScreen = () => {
   };
 
   const handleEditPost = (post) => {
+    console.log("Navigating to EditPorterBook with post data:", post);  // Log the post data
     navigation.navigate("EditPorterBook", { post });
-  };
+  };  
 
   const renderEditIcon = (post) => {
     if (auth.currentUser && post.createdBy === auth.currentUser.uid) {
@@ -81,29 +73,28 @@ const AllPorterBookScreen = () => {
     return null;
   };
 
+  const truncateText = (text, maxLength) => {
+    return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+  };
+
   const renderPostItem = ({ item: post }) => (
     <TouchableOpacity
       style={styles.postCard}
       onPress={() => handlePostPress(post)}
     >
-      <View style={styles.postTitleContainer}>
+      <Image
+        source={{ uri: post.eventImageUrl }}
+        style={styles.cardImage}
+        resizeMode="cover"
+      />
+      <View style={styles.cardContent}>
         <Text style={styles.postTitle}>{post.title}</Text>
+        <Text style={styles.date}>
+          {new Date(post.startDate).toLocaleDateString()} -{" "}
+          {new Date(post.endDate).toLocaleDateString()}
+        </Text>
+        <Text style={styles.about}>{truncateText(post.about, 150)}</Text>
         {renderEditIcon(post)}
-      </View>
-      <Text style={styles.date}>
-        Start Date: {new Date(post.startDate).toLocaleDateString()} | End Date:{" "}
-        {new Date(post.endDate).toLocaleDateString()}
-      </Text>
-      <Text style={styles.about}>{post.about}</Text>
-      <View style={styles.imageGrid}>
-        {post.eventImageUrl ? (
-          <Image
-            source={{ uri: post.eventImageUrl }}
-            style={styles.bookImage}
-          />
-        ) : (
-          <Text>No Image Available</Text>
-        )}
       </View>
     </TouchableOpacity>
   );
@@ -135,66 +126,48 @@ const AllPorterBookScreen = () => {
             <FloatingButton targetScreen="CreateEventPost" />
           </View>
         )}
-        <BottomNavigator />
       </View>
+      <BottomNavigator />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#C0C0C0",
-  },
-  listContainer: {
-    paddingBottom: 20,
-    paddingHorizontal: 15,
-  },
   postCard: {
-    backgroundColor: "#fff",
+    flexDirection: "row",
+    backgroundColor: "#F5F5F5",
     borderRadius: 10,
-    padding: 15,
-    marginBottom: 20,
-    elevation: 5,
-    borderWidth: 1,
-    borderColor: "#dcdcdc",
+    marginBottom: 15,
+    overflow: "hidden",
+    elevation: 3,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
     shadowRadius: 2,
   },
+  cardImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+  },
+  cardContent: {
+    flex: 1,
+    padding: 10,
+    justifyContent: "space-between",
+  },
   postTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
     marginBottom: 5,
   },
   date: {
-    marginBottom: 10,
-    fontStyle: "italic",
-  },
-  about: {
-    marginBottom: 10,
-  },
-  bookImage: {
-    width: 150,
-    height: 150,
-    borderRadius: 10,
+    fontSize: 12,
+    color: "#888",
     marginBottom: 5,
   },
-  imageGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    marginTop: 10,
-  },
-  postTitleContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10,
+  about: {
+    fontSize: 14,
+    color: "#555",
   },
 });
 

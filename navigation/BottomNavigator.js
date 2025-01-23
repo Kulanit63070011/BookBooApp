@@ -14,9 +14,13 @@ const BottomNavigator = () => {
                 <Image source={require('../assets/images/human.png')} style={styles.icon} />
                 <Text style={styles.navText}>Market</Text>
             </Pressable>
-            <Pressable style={styles.navItem} onPress={() => navigation.navigate('MyBookShelf')}>
+            <Pressable style={styles.navItem} onPress={() => navigation.navigate('AllChat')}>
                 <Image source={require('../assets/images/human.png')} style={styles.icon} />
                 <Text style={styles.navText}>Chat</Text>
+            </Pressable>
+            <Pressable style={styles.navItem} onPress={() => navigation.navigate('MyBookShelf')}>
+                <Image source={require('../assets/images/human.png')} style={styles.icon} />
+                <Text style={styles.navText}>BookShelf</Text>
             </Pressable>
             <Pressable style={styles.navItem} onPress={() => navigation.navigate('MyProfile')}>
                 <Image source={require('../assets/images/human.png')} style={styles.icon} />

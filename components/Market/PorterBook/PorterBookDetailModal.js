@@ -1,13 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Modal,
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  ScrollView,
-} from "react-native";
+import { Modal, View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import PorterRequestModal from "./PorterRequestModal";
 import PorterSelectionModal from "./PorterSelectionModal";
@@ -16,17 +8,15 @@ import { db } from "../../../backend/firebase";
 
 const PorterBookDetailModal = ({ visible, postData, onClose, userRole }) => {
   const navigation = useNavigation();
-
-  // State for modals
   const [isRequestModalVisible, setRequestModalVisible] = useState(false);
   const [isSelectionModalVisible, setSelectionModalVisible] = useState(false);
   const [porters, setPorters] = useState([]);
-  const [items, setItems] = useState([]); // State for items
+  const [items, setItems] = useState([]);
 
   useEffect(() => {
     if (postData) {
-      fetchItems(); // ดึง items เมื่อ postData มีการเปลี่ยนแปลง
-      fetchPorters(); // ดึง porters ด้วย
+      fetchItems();
+      fetchPorters();
     }
   }, [postData]);
 
@@ -49,7 +39,7 @@ const PorterBookDetailModal = ({ visible, postData, onClose, userRole }) => {
 
   const fetchItems = async () => {
     try {
-      const itemsRef = collection(db, `events/${postData.id}/items`); // Correct path to fetch items
+      const itemsRef = collection(db, `events/${postData.id}/items`);
       const querySnapshot = await getDocs(itemsRef);
 
       const itemsList = querySnapshot.docs.map((doc) => ({
@@ -65,7 +55,7 @@ const PorterBookDetailModal = ({ visible, postData, onClose, userRole }) => {
 
   const renderPostItems = () => {
     if (!items || items.length === 0) {
-      return <Text>No items available.</Text>;
+      return <Text style={styles.noItemsText}>No items available.</Text>;
     }
 
     return items.map((item, index) => (
@@ -75,9 +65,9 @@ const PorterBookDetailModal = ({ visible, postData, onClose, userRole }) => {
         <View style={styles.imageGrid}>
           <Image
             source={
-              item.itemImage // Ensure this points to the image URL from Firebase Storage
+              item.itemImage
                 ? { uri: item.itemImage }
-                : require("../../../assets/images/bookcover.png") // Fallback image if no image is provided
+                : require("../../../assets/images/bookcover.png")
             }
             style={styles.bookImage}
           />
@@ -92,10 +82,20 @@ const PorterBookDetailModal = ({ visible, postData, onClose, userRole }) => {
 
   const handleSelectPorter = (porter) => {
     navigation.navigate("Chat", { partnerId: porter.userId });
-    setSelectionModalVisible(false); // ปิด PorterSelectionModal
+    setSelectionModalVisible(false);
   };
 
   if (!visible) return null;
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      weekday: "short", // Day of the week
+      year: "numeric", // Full year
+      month: "short", // Abbreviated month
+      day: "numeric", // Day of the month
+    });
+  };
 
   return (
     <Modal transparent={true} animationType="slide" visible={visible}>
@@ -106,7 +106,7 @@ const PorterBookDetailModal = ({ visible, postData, onClose, userRole }) => {
           </TouchableOpacity>
           <Text style={styles.title}>{postData.title}</Text>
           <Text style={styles.date}>
-            Start Date: {postData.startDate} | End Date: {postData.endDate}
+            Start Date: {formatDate(postData.startDate)} | End Date: {formatDate(postData.endDate)}
           </Text>
           <ScrollView style={styles.scrollView}>{renderPostItems()}</ScrollView>
           <Text style={styles.about}>{postData.about}</Text>
@@ -116,16 +116,14 @@ const PorterBookDetailModal = ({ visible, postData, onClose, userRole }) => {
               style={styles.chatButton}
               onPress={handleRequestPress}
             >
-              <Text style={styles.chatButtonText}>สมัครรับหิ้ว event นี้</Text>
+              <Text style={styles.chatButtonText}>Apply to be a carrier for this event.</Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
               style={styles.chatButton}
-              onPress={() => {
-                setSelectionModalVisible(true); // เปิด PorterSelectionModal
-              }}
+              onPress={() => setSelectionModalVisible(true)}
             >
-              <Text style={styles.chatButtonText}>ฝากหิ้วชิ้นนี้</Text>
+              <Text style={styles.chatButtonText}>See all porters in this event</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -139,7 +137,7 @@ const PorterBookDetailModal = ({ visible, postData, onClose, userRole }) => {
         visible={isSelectionModalVisible}
         onClose={() => {
           setSelectionModalVisible(false);
-          onClose(); // ปิด PorterBookDetailModal เมื่อปิด PorterSelectionModal
+          onClose();
         }}
         eventId={postData.id}
         onSelectPorter={handleSelectPorter}
@@ -157,9 +155,14 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: "white",
-    borderRadius: 10,
+    borderRadius: 15,
     padding: 20,
     width: "90%",
+    maxHeight: "80%",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
   },
   closeButton: {
     position: "absolute",
@@ -167,67 +170,75 @@ const styles = StyleSheet.create({
     right: 10,
   },
   closeText: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
-    color: "red",
+    color: "#FF5733",
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "bold",
     marginBottom: 10,
     color: "#333",
   },
   date: {
-    marginBottom: 10,
-    color: "#666",
+    fontSize: 14,
+    color: "#777",
+    marginBottom: 15,
   },
   itemContainer: {
-    marginBottom: 15,
-    borderBottomColor: "#ddd",
+    marginBottom: 20,
     borderBottomWidth: 1,
-    paddingBottom: 10,
+    borderBottomColor: "#ddd",
+    paddingBottom: 15,
   },
   itemName: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 20,
+    fontWeight: "600",
     color: "#333",
   },
   itemPrice: {
     fontSize: 16,
-    color: "#666",
-    marginBottom: 5,
+    color: "#555",
+    marginBottom: 8,
   },
   imageGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
+    marginBottom: 10,
   },
   bookImage: {
-    width: 70,
-    height: 100,
+    width: 90,
+    height: 140,
     marginBottom: 5,
-    borderRadius: 8,
+    borderRadius: 12,
     backgroundColor: "#f0f0f0",
   },
   scrollView: {
-    maxHeight: 250,
+    maxHeight: 300,
   },
   about: {
-    marginTop: 10,
     fontSize: 16,
     color: "#444",
+    marginTop: 15,
+  },
+  noItemsText: {
+    fontSize: 16,
+    textAlign: "center",
+    color: "#999",
   },
   chatButton: {
-    marginTop: 15,
-    padding: 10,
+    marginTop: 20,
+    padding: 12,
     backgroundColor: "#007bff",
-    borderRadius: 5,
+    borderRadius: 8,
     alignItems: "center",
+    elevation: 3,
   },
   chatButtonText: {
-    color: "white",
+    color: "#fff",
     fontWeight: "bold",
-    fontSize: 16,
+    fontSize: 18,
   },
 });
 

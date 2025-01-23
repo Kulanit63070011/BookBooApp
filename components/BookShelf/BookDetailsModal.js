@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Modal, View, Text, Pressable, TextInput, StyleSheet, ScrollView, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
+import { deleteDoc, doc, getDoc } from 'firebase/firestore';
+import { db, auth } from '../../backend/firebase';
 
-const BookDetailsModal = ({ visible, bookDetails, onClose, onDelete, onSave }) => {
+const BookDetailsModal = ({ visible, bookDetails, onClose, onSave }) => {
   if (!visible || !bookDetails) {
     return null;
   }
@@ -11,9 +13,7 @@ const BookDetailsModal = ({ visible, bookDetails, onClose, onDelete, onSave }) =
   const categories = [
     'General novels', 'Romantic novels', 'Fantasy novels', 'Sci-fi novels',
     'Adventure novels', 'Detective novels', 'Horror novels', 'Serial novels',
-    'General cartoons', 'Romantic cartoons', 'Fantasy cartoons', 'Sci-fi cartoons',
-    'Adventure cartoons', 'Detective cartoons', 'Horror cartoons', 'Serial cartoons',
-    'Finance and Investment', 'Market Accounting', 'Psychology', 'Self-Development',
+    'Cartoons & Anime', 'Finance and Investment', 'Market Accounting', 'Psychology', 'Self-Development',
     'Education', 'Language', 'Law', 'Creative Design', 'Politics', 'Computer Science',
     'History', 'Religious Beliefs', 'Pets', 'Health', 'Travel', 'Music and Entertainment',
     'Food', 'Art', 'Others'
@@ -21,20 +21,51 @@ const BookDetailsModal = ({ visible, bookDetails, onClose, onDelete, onSave }) =
 
   const [updatedDetails, setUpdatedDetails] = useState({
     ...bookDetails,
+    detailBookByUser: bookDetails.detailBookByUser || "",  // Ensure it's not null
   });
 
   const handleInputChange = (property, value) => {
     setUpdatedDetails({
       ...updatedDetails,
-      [property]: value,
+      [property]: value || "",  // Default to an empty string if value is null
     });
   };
 
   const handleSave = () => {
-    console.log(updatedDetails);  // ตรวจสอบข้อมูลที่ส่งไป
+    console.log(updatedDetails);  // Check the updated details before saving
     onSave(updatedDetails, bookDetails.id);
     onClose();
-  };  
+  };
+
+  const onDelete = async (bookId) => {
+    if (!bookId) {
+      console.log("No book ID provided");
+      return;
+    }
+
+    try {
+      const bookDocRef = doc(db, 'bookshelves', auth.currentUser.uid, 'myBooks', bookId);
+      const bookDoc = await getDoc(bookDocRef);
+
+      if (bookDoc.exists()) {
+        await deleteDoc(bookDocRef);
+        console.log('Book deleted successfully');
+      } else {
+        console.log('Book not found');
+      }
+    } catch (error) {
+      console.error('Error deleting book:', error);
+    }
+  };
+
+
+
+  const handleDelete = () => {
+    console.log("Delete button pressed");
+    console.log("Book ID to delete:", bookDetails.id);  // Log the book ID to be deleted
+    onDelete(bookDetails.id);
+    onClose();
+  };
 
   return (
     <Modal transparent={true} animationType="slide" visible={visible}>
@@ -48,16 +79,25 @@ const BookDetailsModal = ({ visible, bookDetails, onClose, onDelete, onSave }) =
           </View>
           <ScrollView>
             <View style={styles.formContainer}>
-              <Image
-                source={require('../../assets/images/bookcover.png')}
-                resizeMode="cover"
-                style={styles.modalImage}
-              />
+              {/* Dynamically display the book cover */}
+              {bookDetails.thumbnail ? (
+                <Image
+                  source={{ uri: bookDetails.thumbnail }}
+                  resizeMode="cover"
+                  style={styles.modalImage}
+                />
+              ) : (
+                <Image
+                  source={require('../../assets/images/bookcover.png')}
+                  resizeMode="cover"
+                  style={styles.modalImage}
+                />
+              )}
               <Text style={styles.label}>Book Title:</Text>
               <TextInput
                 style={styles.input}
                 value={updatedDetails.title}
-                editable={false} // ไม่สามารถแก้ไขได้
+                editable={false} // Can't edit the title
               />
               <Text style={styles.label}>Type:</Text>
               <Picker
@@ -74,19 +114,18 @@ const BookDetailsModal = ({ visible, bookDetails, onClose, onDelete, onSave }) =
               <TextInput
                 style={styles.input}
                 value={updatedDetails.author}
-                editable={false} // ไม่สามารถแก้ไขได้
+                editable={false} // Can't edit the author
               />
               <Text style={styles.label}>About Book:</Text>
               <TextInput
                 style={[styles.input, { height: 80 }]}
-                value={updatedDetails.aboutBook}
-                editable={false} // ไม่สามารถแก้ไขได้
+                value={updatedDetails.aboutBook || ""}  // Ensure empty string if null or undefined
+                editable={false}
                 multiline={true}
               />
-              <Text style={styles.label}>Additional Notes:</Text>
               <TextInput
                 style={[styles.input, { height: 80 }]}
-                value={updatedDetails.detailBookByUser}
+                value={updatedDetails.detailBookByUser || ""}
                 onChangeText={(text) => handleInputChange('detailBookByUser', text)}
                 placeholder="Add your personal notes here"
                 multiline={true}
@@ -97,7 +136,7 @@ const BookDetailsModal = ({ visible, bookDetails, onClose, onDelete, onSave }) =
             <Pressable onPress={handleSave} style={styles.actionButton}>
               <Text style={{ color: '#4542C1' }}>Save</Text>
             </Pressable>
-            <Pressable onPress={onDelete} style={[styles.actionButton, { backgroundColor: 'red' }]}>
+            <Pressable onPress={handleDelete} style={[styles.actionButton, { backgroundColor: 'red' }]}>
               <Text style={styles.buttonText}>Delete</Text>
             </Pressable>
           </View>
@@ -150,7 +189,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingLeft: 5,
     color: 'black',
-    backgroundColor: 'white'
+    backgroundColor: 'white',
   },
   actionButton: {
     backgroundColor: 'white',
@@ -158,7 +197,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     marginTop: 10,
     alignItems: 'center',
-    width: '45%'
+    width: '45%',
   },
   buttonText: {
     color: 'white',

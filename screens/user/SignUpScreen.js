@@ -1,14 +1,5 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  Image,
-  TextInput,
-  ScrollView,
-  Platform,
-  StyleSheet,
-} from "react-native";
+import { View, Text, Pressable, Image, TextInput, ScrollView, Platform, StyleSheet, } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { signUpStyles } from "../../style/user/SignUpStyle";
@@ -20,7 +11,6 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-
 
 export default function SignUpScreen() {
   const navigation = useNavigation();
@@ -40,21 +30,21 @@ export default function SignUpScreen() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const userId = userCredential.user.uid;
       const userDocRef = doc(db, "users", userId);
-  
+
       let userImageUrl = null;
       if (imageUri) {
         const response = await fetch(imageUri);
         const blob = await response.blob();
-        
+
         // กำหนด storageRef สำหรับอัปโหลดไฟล์
         const storageRef = ref(storage, `userImages/${userId}`);
-        
+
         // อัปโหลดไฟล์ภาพไปยัง Firebase Storage
         await uploadBytes(storageRef, blob);
         userImageUrl = await getDownloadURL(storageRef); // ดึง URL ของภาพที่อัปโหลด
         console.log("Image uploaded to Firebase Storage:", userImageUrl);  // Debug log
       }
-  
+
       // บันทึกข้อมูลใน Firestore
       await setDoc(userDocRef, {
         displayName,
@@ -65,7 +55,7 @@ export default function SignUpScreen() {
         interests: [],
         userImage: userImageUrl, // เก็บ URL ของภาพใน Firestore
       });
-  
+
       alert("Sign up successful");
       navigation.navigate("Login");
     } catch (error) {
